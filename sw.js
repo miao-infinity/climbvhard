@@ -1,5 +1,5 @@
 /* CRUX — offline service worker */
-var CACHE = 'crux-v9';
+var CACHE = 'crux-v10';
 var ASSETS = [
   './',
   './index.html',

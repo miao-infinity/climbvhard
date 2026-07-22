@@ -1174,16 +1174,16 @@ function sessionCard(s){
 
 /* ---------- guide ---------- */
 var PILLARS=[
-  { name:'Finger strength', icon:'shield', color:'#33C39E', desc:'The gatekeeper. Most people stuck below V8 are stuck on fingers, not fitness.', time:'2×/week', methods:[
-    { name:'Weighted max hangs', time:'2×/week', desc:'Half-crimp on a 20mm edge with added weight. The most reliable driver of grade at this level — and the number worth tracking for years.', tags:['7–10s hang','3–5 min rest','5–6 sets','Add weight, not time','Fresh fingers only'] },
+  { name:'Finger strength', icon:'shield', color:'#33C39E', desc:'The gatekeeper. Most plateaus are fingers, not fitness.', time:'2×/week', methods:[
+    { name:'Weighted max hangs', time:'2×/week', desc:'Half-crimp on a 20mm edge with added weight. The one number worth tracking for years, and the most reliable thing to move.', tags:['7–10s hang','3–5 min rest','5–6 sets','Add weight, not time','Fresh fingers only'] },
     { name:'Repeaters', time:'1×/week', desc:'Strength-endurance: still pulling hard on the fifth go of a project, not just the first.', tags:['7s on / 3s off × 6','2–3 min between sets','Lighter than max hangs'] },
     { name:'Load management', time:'always', desc:'Two grades is a long campaign. Pulley injuries are what actually end it.', tags:['48h between finger sessions','Deload every 4th week','Joint ache ≠ muscle burn — stop'] }
   ]},
-  { name:'Power', icon:'zap', color:'#F0873B', desc:'Force delivered fast. V8 moves are rarely static.', time:'1–2×/week', methods:[
+  { name:'Power', icon:'zap', color:'#F0873B', desc:'Force delivered fast. The hard moves are rarely static.', time:'1–2×/week', methods:[
     { name:'Limit bouldering', time:'1–2×/week', desc:'Problems at your absolute ceiling — a few hard moves, full effort, properly rested between goes.', tags:['Fresh, after a full warm-up','3–5 min between goes','~45 min, then stop'] },
     { name:'Campus / contact', time:'1×/week max', desc:'Recruitment — grip force the instant you hit the hold. High injury cost, so earn it first.', tags:['Only after a year at V6+','Ladders, 1-3-5','Never when fatigued'] }
   ]},
-  { name:'Projecting skill', icon:'target', color:'#8A7DE0', desc:'At V8 the limiter is often tactics. Strong climbers still waste goes.', time:'every session', methods:[
+  { name:'Projecting skill', icon:'target', color:'#8A7DE0', desc:'Often the limiter is tactics, not strength. Strong climbers still waste goes.', time:'every session', methods:[
     { name:'Work it in sections', desc:'Break the boulder up, solve each piece, then link. Repeating from the ground burns skin and teaches nothing.', tags:['Isolate the crux','Rehearse exact beta','Link from the low point'] },
     { name:'Decide before you pull on', desc:'Goes are the scarcest resource you have. Read the sequence from the ground and commit.', tags:['One beta at a time','Change one variable per go'] },
     { name:'Write down every session', desc:'What failed and why. Patterns across weeks only show up in writing.', tags:['High point','What slipped','How you felt'] }
@@ -1208,14 +1208,14 @@ function tint(hex, a){
 function buildGuide(){
   var wrap=h('div',{class:'wrap wide'});
   wrap.appendChild(h('div',{class:'ghead'},
-    h('div',{class:'gtitle'},'Getting to ', h('em',{},'V8')),
-    h('div',{class:'gsub'},'Three pillars, in order of priority. Work them in that order — technique will not rescue fingers that are not strong enough yet.')
+    h('div',{class:'gtitle'},'Getting ', h('em',{},'strong'),' enough'),
+    h('div',{class:'gsub'},'Three pillars, in priority order. Technique will not rescue fingers that cannot hold on yet.')
   ));
   wrap.appendChild(h('div',{class:'callout'},
-    h('b',{},'A note on the timeline. '),
-    'V6+ to V8 is two grades. For most people that is seasons, not weeks — so the thing that decides it is ',
-    h('b',{},'consistency and staying uninjured'),
-    ', not any single session. Expect long flat stretches where nothing seems to move.'
+    h('b',{},'Play the long game. '),
+    'This moves in seasons, not weeks. ',
+    h('b',{},'Consistency and healthy fingers'),
+    ' decide it — not any one session. Expect long flat stretches.'
   ));
   var pillars=h('div',{class:'pillars'});
   PILLARS.forEach(function(p,idx){
