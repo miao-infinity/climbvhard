@@ -1193,6 +1193,8 @@ var RESOURCES=[
   { name:'Lattice Training', url:'https://latticetraining.com', desc:'Testing-led methodology. Strongest material on finger-strength benchmarks and structured plans.' },
   { name:'Training For Climbing — Eric Hörst', url:'https://trainingforclimbing.com', desc:'Long-running library on periodisation, hangboarding and recovery.' },
   { name:'Power Company Climbing', url:'https://powercompanyclimbing.com', desc:'Practical coaching writing — especially good on projecting tactics and honest self-assessment.' },
+  { name:'Movement for Climbers', url:'https://www.youtube.com/@movementforclimbers', desc:'Movement and technique drills on video — the part that is hard to learn from text.' },
+  { name:'Paradigm Climbing', url:'https://paradigmclimbing.com', desc:'Coaching and structured programmes, with a strong focus on movement quality.' },
   { name:'Climb Strong', url:'https://climbstrong.com', desc:'Steve Bechtel on programme design, and why most self-coached plans quietly fail.' },
   { name:"Hooper's Beta", url:'https://hoopersbeta.com', desc:'Physio-led injury prevention and rehab. Read the finger-pulley material before you need it.' },
   { name:'The Climbing Doctor', url:'https://theclimbingdoctor.com', desc:'Injury assessment and rehab protocols written for climbers.' }
@@ -1208,14 +1210,12 @@ function tint(hex, a){
 function buildGuide(){
   var wrap=h('div',{class:'wrap wide'});
   wrap.appendChild(h('div',{class:'ghead'},
-    h('div',{class:'gtitle'},'Getting ', h('em',{},'strong'),' enough'),
-    h('div',{class:'gsub'},'Three pillars, in priority order. Technique will not rescue fingers that cannot hold on yet.')
+    h('div',{class:'gtitle'},'Getting to ', h('em',{},'V8')),
+    h('div',{class:'gsub'},'Three pillars, in priority order.')
   ));
   wrap.appendChild(h('div',{class:'callout'},
-    h('b',{},'Play the long game. '),
-    'This moves in seasons, not weeks. ',
     h('b',{},'Consistency and healthy fingers'),
-    ' decide it — not any one session. Expect long flat stretches.'
+    ' decide it. Expect long flat stretches.'
   ));
   var pillars=h('div',{class:'pillars'});
   PILLARS.forEach(function(p,idx){
