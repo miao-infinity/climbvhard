@@ -92,6 +92,29 @@
   .newtag .inp{font-size:12.5px;padding:6px 9px;}
   .attlbl{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:none;}
 
+  /* weekly plan strip */
+  .plan{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .planhead{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;width:100%;background:transparent;border:none;font-family:var(--font);text-align:left;}
+  .plandow{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--muted);flex:none;}
+  .plantext{flex:1;min-width:0;font-size:13.5px;color:var(--chalk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .plantext.rest{color:var(--muted);}
+  .planbody{padding:4px 13px 13px;border-top:1px solid var(--line);}
+  .day{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .day:last-of-type{border-bottom:none;}
+  .day.rest{opacity:.62;}
+  .dow{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--dim);width:30px;text-transform:uppercase;flex:none;}
+  .mk{display:inline-flex;align-items:center;flex:none;width:12px;justify-content:center;}
+  .mk svg{color:var(--muted);}
+  .dot{width:7px;height:7px;border-radius:50%;background:#E7C13B;}
+  .planin{flex:1;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:14px;outline:none;padding:2px 0;min-width:0;}
+  .planin::placeholder{color:var(--muted);}
+
+  /* exercise quick-add */
+  .chipgroup{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:7px;}
+  .chipglabel{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;color:var(--muted);width:62px;flex:none;}
+  .chip.add{border-style:solid;color:var(--dim);}
+  .chip.add:hover{color:var(--chalk);}
+
   /* exercises */
   .ex{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;background:var(--raise);}
   .extop{display:flex;align-items:center;gap:9px;}
@@ -245,6 +268,18 @@ var SPORT=['.10a','.10b','.10c','.10d','.11a','.11b','.11c','.11d','.12a','.12b'
 var BASE_BOULDER_TAGS=['power','dynamic','slab','coordo','moon','tension'];
 var BASE_ROUTE_TAGS=['indoor','outdoor'];
 var SCHEMA=3;
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var DEFAULT_PLAN={ Mon:'Strength — hangboard + frenchies', Tue:'Rest / mobility', Wed:'Power — limit boulders + campus', Thu:'Rest / antagonists', Fri:'Technique — precision, tension, commitment', Sat:'Projecting — apply it', Sun:'Rest' };
+/* Word-bounded so "Wrestling" is not mistaken for a rest day. */
+function isRest(f){ return !f || !f.trim() || /\brest\b/i.test(f); }
+
+var EX_GROUPS=[
+  { label:'Strength',  items:['Hangboard','Frenchies'] },
+  { label:'Power',     items:['Limit boulders','Campus'] },
+  { label:'Technique', items:['Technique'] },
+  { label:'Support',   items:['Core','Antagonists','Stretch'] },
+  { label:'Weight',    items:['Bench press','Box Jumping','Dead lift'] }
+];
 
 /* ---------- icons ---------- */
 var ICONS={
@@ -261,7 +296,9 @@ var ICONS={
   shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
   target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
-  up:'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>'
+  up:'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+  moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+  rotate:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>'
 };
 function ic(name,size){
   var s=size||16, span=document.createElement('span'); span.style.display='inline-flex';
@@ -296,8 +333,22 @@ function newId(){ return Date.now().toString(36)+'-'+Math.random().toString(36).
 /* ---------- state ---------- */
 var sessions = load('crux:sessions', []);
 var tags = load('crux:tags', null) || { boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
+/* Same key and shape as the pre-rewrite Week tab, so a plan written back then
+   is picked up rather than silently discarded. Untrusted-input safe: it is
+   also what validates an imported plan. */
+function normalizePlan(raw, base){
+  var out={}, i, d, v;
+  for(i=0;i<DAYS.length;i++){
+    d=DAYS[i]; v=raw && raw[d];
+    out[d] = (typeof v==='string') ? v.slice(0,120) : base[d];
+  }
+  return out;
+}
+var plan = normalizePlan(load('crux:plan', null), DEFAULT_PLAN);
+function savePlan(){ save('crux:plan', plan); }
+
 var tab='climb', curDate=todayStr(), range='month';
-var openTags=null, openSession=null, resetArmed=false, dataMsg=null;
+var openTags=null, openSession=null, resetArmed=false, dataMsg=null, planOpen=false;
 var tabsHost, viewHost;
 
 function saveSessions(){ save('crux:sessions', sessions); }
@@ -417,10 +468,64 @@ function tagPicker(kind, item, onChange){
   return pick;
 }
 
+/* ---------- shared: weekly plan strip ---------- */
+/* Collapsed it shows one line — the plan for whichever day curDate points at,
+   so it matches the session you are actually editing. Expanded it is the full
+   week editor. Kept out of the nav because a sixth tab does not fit at 375px,
+   and a plan you have to navigate to is a plan you stop reading. */
+function planStrip(){
+  var dow = DAYS[(parseLocal(curDate).getDay()+6)%7];
+  var box = h('div',{class:'plan'});
+  var txt = plan[dow]||'';
+  var head = h('span',{class:'plantext'+(isRest(txt)?' rest':'')}, txt.trim()||'Rest');
+  var chev = ic('chev',15);
+  chev.style.color='var(--muted)';
+  chev.style.transform = planOpen ? 'rotate(180deg)' : '';
+  box.appendChild(h('button',{class:'planhead', 'aria-expanded':String(planOpen),
+    onclick:function(){ planOpen=!planOpen; renderView(); }},
+    h('span',{class:'plandow'}, dow.toUpperCase()), head, chev));
+  if(planOpen) box.appendChild(planBody(dow, head));
+  return box;
+}
+
+function planBody(curDow, headEl){
+  var body=h('div',{class:'planbody'});
+  var days=h('div',{});          /* own wrapper so .day:last-of-type actually matches Sunday */
+  DAYS.forEach(function(d){
+    var row=h('div',{class:'day'+(isRest(plan[d])?' rest':'')});
+    var mk=h('span',{class:'mk'});
+    function renderMk(){ mk.innerHTML=''; mk.appendChild(isRest(plan[d]) ? ic('moon',13) : h('span',{class:'dot'})); }
+    renderMk();
+    /* Patches in place rather than calling renderView() — a re-render per
+       keystroke would blur the field and drop the caret mid-word. */
+    var input=h('input',{class:'planin', value:plan[d]||'', maxLength:120, 'aria-label':d+' plan',
+      placeholder:'Rest day — tap to add training',
+      oninput:function(e){
+        plan[d]=e.target.value; savePlan();
+        row.className='day'+(isRest(plan[d])?' rest':''); renderMk();
+        if(d===curDow){
+          headEl.textContent = plan[d].trim()||'Rest';
+          headEl.className='plantext'+(isRest(plan[d])?' rest':'');
+        }
+      }});
+    row.appendChild(h('span',{class:'dow'},d));
+    row.appendChild(mk);
+    row.appendChild(input);
+    days.appendChild(row);
+  });
+  body.appendChild(days);
+  body.appendChild(h('div',{class:'foot'},
+    h('button',{class:'reset', onclick:function(){
+      plan=normalizePlan(null, DEFAULT_PLAN); savePlan(); renderView();
+    }}, ic('rotate',13),'Reset plan to default')));
+  return body;
+}
+
 /* ---------- climb view ---------- */
 function buildClimb(){
   var wrap=h('div',{class:'wrap'});
   var s=findSession(curDate);
+  wrap.appendChild(planStrip());
   wrap.appendChild(dateBar());
 
   /* --- boulders --- */
@@ -554,6 +659,7 @@ function fmtSets(sets){
 function buildTrain(){
   var wrap=h('div',{class:'wrap'});
   var s=findSession(curDate);
+  wrap.appendChild(planStrip());
   wrap.appendChild(dateBar());
 
   var card=h('div',{class:'card'});
@@ -566,18 +672,34 @@ function buildTrain(){
   card.appendChild(dl);
 
   var addIn=h('input',{class:'inp', placeholder:'Exercise name', list:'exnames'});
-  function addExercise(){
-    var nm=addIn.value.trim(); if(!nm) return;
+  /* Chips and typing go through one path, so both get the same
+     prefill-from-last-time behaviour. */
+  function addNamed(nm){
+    nm=(nm||'').trim(); if(!nm) return;
     var ses=ensureSession(curDate);
     var prev=lastTimeFor(nm, curDate);
     var sets = prev ? prev.sets.map(function(st){ return { weight:st.weight, reps:st.reps }; }) : [{weight:null,reps:null}];
     if(!sets.length) sets=[{weight:null,reps:null}];
     ses.exercises.push({ id:newId(), name:nm, sets:sets });
-    addIn.value=''; commit(); renderView();
+    commit(); renderView();
   }
+  function addExercise(){ var nm=addIn.value; addIn.value=''; addNamed(nm); }
   addIn.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addExercise(); } });
   card.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center'}},
     addIn, h('button',{class:'btn ghost sm', style:{flex:'none'}, onclick:addExercise},'Add')));
+
+  EX_GROUPS.forEach(function(g, gi){
+    var grp=h('div',{class:'chipgroup', style:gi===0?{marginTop:'13px'}:null});
+    grp.appendChild(h('span',{class:'chipglabel'}, g.label));
+    g.items.forEach(function(nm){
+      grp.appendChild(h('button',{class:'chip add', onclick:function(){ addNamed(nm); }}, nm));
+    });
+    card.appendChild(grp);
+  });
+  var customRow=h('div',{class:'chipgroup'});
+  customRow.appendChild(h('span',{class:'chipglabel'},'Custom'));
+  customRow.appendChild(h('button',{class:'chip add', onclick:function(){ addIn.focus(); }}, ic('plus',12),' name it'));
+  card.appendChild(customRow);
 
   var list=h('div',{style:{marginTop:'12px'}});
   ((s&&s.exercises)||[]).forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
@@ -867,7 +989,7 @@ function sessionCard(s){
       var txt=fmtSets(e.sets);
       g3.appendChild(h('div',{class:'sline'},
         h('span',{style:{color:'var(--chalk)'}}, e.name||'Exercise'),
-        h('b',{}, txt||((e.sets||[]).length+' sets'))
+        h('b',{}, txt||((e.sets||[]).length+((e.sets||[]).length===1?' set':' sets')))
       ));
     });
     body.appendChild(g3);
@@ -962,7 +1084,7 @@ function buildGuide(){
 
 /* ---------- backup / restore ---------- */
 function exportData(){
-  var payload={ app:'crux', schema:SCHEMA, exported:new Date().toISOString(), sessions:sessions, tags:tags };
+  var payload={ app:'crux', schema:SCHEMA, exported:new Date().toISOString(), sessions:sessions, tags:tags, plan:plan };
   var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   var a=h('a',{href:url, download:'crux-backup-'+todayStr()+'.json'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -1042,10 +1164,14 @@ function importData(file){
       });
       saveTags();
     }
+    var planNote='';
+    if(data.plan && typeof data.plan==='object'){
+      plan=normalizePlan(data.plan, plan); savePlan(); planNote=' Plan restored.';
+    }
     commit();
     dataMsg={ text:'Imported '+added+' session'+(added===1?'':'s')+
       (merged?', merged into '+merged+' existing day'+(merged===1?'':'s'):'')+
-      (skipped?', skipped '+skipped+' duplicate or invalid':'')+'.', ok:true };
+      (skipped?', skipped '+skipped+' duplicate or invalid':'')+'.'+planNote, ok:true };
     renderView();
   };
   reader.readAsText(file);
@@ -1090,7 +1216,8 @@ function buildData(){
     h('button',{class:'reset', onclick:function(){
       if(!resetArmed){ resetArmed=true; dataMsg=null; renderView(); setTimeout(function(){ resetArmed=false; },4000); return; }
       sessions=[]; tags={ boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
-      saveSessions(); saveTags(); resetArmed=false;
+      plan=normalizePlan(null, DEFAULT_PLAN);
+      saveSessions(); saveTags(); savePlan(); resetArmed=false;
       dataMsg={ text:'All data erased.', ok:false }; renderView();
     }}, ic('trash',13), resetArmed?'Tap again to erase everything':'Reset all data')));
   wrap.appendChild(stats);
