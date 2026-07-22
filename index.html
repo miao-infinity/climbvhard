@@ -1413,6 +1413,33 @@ function buildData(){
   sessions.forEach(function(s){ nb+=(s.boulders||[]).length; nr+=(s.routes||[]).length; ne+=(s.exercises||[]).length; });
   stats.appendChild(h('p',{class:'sub', style:{margin:'0'}},
     sessions.length+' sessions · '+nb+' boulders · '+nr+' routes · '+ne+' exercises'));
+
+  /* Which build is actually running. GitHub Pages sends max-age=600 and an
+     installed app does not re-fetch on resume, so "is this the new version?"
+     is otherwise unanswerable from the phone. */
+  var buildEl=h('p',{class:'sub', style:{margin:'8px 0 0'}},'build …');
+  stats.appendChild(buildEl);
+  try{
+    if(window.caches && caches.keys){
+      caches.keys().then(function(keys){
+        buildEl.textContent='build '+(keys.length?keys.join(', '):'not cached');
+      }).catch(function(){ buildEl.textContent='build unknown'; });
+    } else { buildEl.textContent='build unknown'; }
+  }catch(e){ buildEl.textContent='build unknown'; }
+
+  stats.appendChild(h('div',{class:'datarow', style:{marginTop:'12px'}},
+    h('button',{class:'btn ghost sm', onclick:function(){
+      var done=function(){ location.reload(true); };
+      try{
+        if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+          navigator.serviceWorker.getRegistration().then(function(r){
+            if(!r) return done();
+            r.update().then(done, done);
+          }, done);
+        } else done();
+      }catch(e){ done(); }
+    }},'Check for update')));
+
   stats.appendChild(h('div',{class:'foot'},
     h('button',{class:'reset', onclick:function(){
       if(!resetArmed){ resetArmed=true; dataMsg=null; renderView(); setTimeout(function(){ resetArmed=false; },4000); return; }
