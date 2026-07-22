@@ -848,8 +848,9 @@ function buildTrain(){
     wrap.appendChild(list);
   }
 
-  var open = addOpen || !logged.length;
-  if(!open){
+  /* The preset list only appears once you ask for it — an empty day is just
+     the Add button, not a wall of chips. */
+  if(!addOpen){
     wrap.appendChild(h('button',{class:'btn ghost addbtn',
       onclick:function(){ addOpen=true; renderView(); }}, ic('plus',15),' Add exercise'));
   } else {
@@ -857,7 +858,7 @@ function buildTrain(){
     card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
       h('span',{class:'lbl first', style:{margin:'0',flex:'1'}}, exEdit?'Editing presets':'Add exercise'),
       h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit'),
-      (logged.length && !exEdit ? h('button',{class:'del','aria-label':'Close', onclick:function(){ addOpen=false; renderView(); }}, ic('x',18)) : null)
+      (exEdit ? null : h('button',{class:'del','aria-label':'Close', onclick:function(){ addOpen=false; renderView(); }}, ic('x',18)))
     ));
 
     exPresets.forEach(function(g){
