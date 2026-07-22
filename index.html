@@ -259,7 +259,6 @@
   .ghead{margin:4px 2px 20px;}
   .gtitle{font-family:var(--serif);font-size:24px;font-weight:800;letter-spacing:-.022em;line-height:1.14;color:var(--chalk);}
   .gtitle em{font-style:normal;color:#E5484D;}
-  .gsub{font-family:var(--serif);font-size:15px;color:var(--muted);margin-top:9px;max-width:58ch;line-height:1.65;}
   /* Guide status — the prescriptions above, measured against what you logged */
   .gstat{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
     padding:10px 0;border-top:1px solid var(--line);}
@@ -269,9 +268,6 @@
   .gstatv.ok{color:#33C39E;}
   .gstatv.warn{color:#E7C13B;}
 
-  .callout{font-family:var(--serif);background:linear-gradient(180deg,rgba(231,193,59,.055),rgba(231,193,59,0));border:1px solid var(--line);
-    border-left:2px solid #E7C13B;border-radius:12px;padding:15px 17px;margin-bottom:20px;font-size:15px;color:var(--dim);line-height:1.68;}
-  .callout b{color:var(--chalk);font-weight:700;}
 
   .pillars{display:flex;flex-direction:column;gap:14px;}
   .pcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 18px 12px;min-width:0;}
@@ -1419,15 +1415,10 @@ function buildStatus(){
 function buildGuide(){
   var wrap=h('div',{class:'wrap wide'});
   wrap.appendChild(h('div',{class:'ghead'},
-    h('div',{class:'gtitle'},'Getting to ', h('em',{},'Vhard')),
-    h('div',{class:'gsub'},'Three pillars, in priority order.')
+    h('div',{class:'gtitle'},'Getting to ', h('em',{},'Vhard'))
   ));
   var status=buildStatus();
   if(status) wrap.appendChild(status);      /* null until something is logged */
-  wrap.appendChild(h('div',{class:'callout'},
-    h('b',{},'Consistency and healthy fingers'),
-    ' decide it. Expect long flat stretches.'
-  ));
   var pillars=h('div',{class:'pillars'});
   PILLARS.forEach(function(p,idx){
     var card=h('div',{class:'pcard'});
