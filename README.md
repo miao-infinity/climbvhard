@@ -1,1 +1,2 @@
-# climbv7
+# climbvhard
+# A training app for my climbing :P
