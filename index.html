@@ -779,11 +779,6 @@ function climbRow(item, kind, label, color){
 }
 
 /* ---------- train view ---------- */
-function exerciseHistory(){
-  var names={};
-  sessions.forEach(function(s){ (s.exercises||[]).forEach(function(e){ if(e.name) names[e.name]=true; }); });
-  return Object.keys(names).sort();
-}
 function lastTimeFor(name, beforeDate){
   var best=null;
   sessions.forEach(function(s){
@@ -811,14 +806,8 @@ function buildTrain(){
   card.appendChild(h('div',{class:'lbl first'},'Exercises'));
   card.appendChild(h('div',{class:'sub'},'Each set gets its own weight and reps. Last session’s numbers show under the name.'));
 
-  var names=exerciseHistory();
-  var dl=h('datalist',{id:'exnames'});
-  names.forEach(function(n){ dl.appendChild(h('option',{value:n})); });
-  card.appendChild(dl);
-
-  var addIn=h('input',{class:'inp', placeholder:'Exercise name', list:'exnames'});
-  /* Chips and typing go through one path, so both get the same
-     prefill-from-last-time behaviour. */
+  /* Tapping a chip is the only way in. Prefills from the last time this
+     exercise was logged. A one-off is a chip tap plus renaming the row. */
   function addNamed(nm){
     nm=(nm||'').trim(); if(!nm) return;
     var prev=lastTimeFor(nm, curDate);
@@ -827,12 +816,8 @@ function buildTrain(){
     editable().exercises.push({ id:newId(), name:nm, sets:sets });
     touch(); renderView();
   }
-  function addExercise(){ var nm=addIn.value; addIn.value=''; addNamed(nm); }
-  addIn.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addExercise(); } });
-  card.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center'}},
-    addIn, h('button',{class:'btn ghost sm', style:{flex:'none'}, onclick:addExercise},'Add')));
 
-  card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginTop:'15px',marginBottom:'9px'}},
+  card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'9px'}},
     h('span',{class:'chipglabel', style:{width:'auto',flex:'1'}}, exEdit?'EDITING PRESETS':'QUICK ADD'),
     h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit')
   ));
@@ -863,11 +848,6 @@ function buildTrain(){
       h('button',{class:'reset', onclick:function(){
         exPresets=cloneOf(DEFAULT_EX_GROUPS); savePresets(); renderView();
       }}, ic('rotate',13),'Reset presets to default')));
-  } else {
-    var customRow=h('div',{class:'chipgroup'});
-    customRow.appendChild(h('span',{class:'chipglabel'},'Custom'));
-    customRow.appendChild(h('button',{class:'chip add', onclick:function(){ addIn.focus(); }}, ic('plus',12),' name it'));
-    card.appendChild(customRow);
   }
 
   var list=h('div',{style:{marginTop:'12px'}});
