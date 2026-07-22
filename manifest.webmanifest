@@ -1,7 +1,7 @@
 {
-  "name": "CRUX — Bouldering Log",
+  "name": "CRUX — Climbing & Training Log",
   "short_name": "CRUX",
-  "description": "A minimal bouldering training tracker: plan your week, log sessions, see progress.",
+  "description": "A minimal climbing and fitness log: boulders, routes, lifts, and progress over time.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
