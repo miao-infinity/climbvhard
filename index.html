@@ -260,6 +260,15 @@
   .gtitle{font-family:var(--serif);font-size:24px;font-weight:800;letter-spacing:-.022em;line-height:1.14;color:var(--chalk);}
   .gtitle em{font-style:normal;color:#E5484D;}
   .gsub{font-family:var(--serif);font-size:15px;color:var(--muted);margin-top:9px;max-width:58ch;line-height:1.65;}
+  /* Guide status — the prescriptions above, measured against what you logged */
+  .gstat{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+    padding:10px 0;border-top:1px solid var(--line);}
+  .gstat:first-of-type{border-top:none;padding-top:2px;}
+  .gstatk{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex:none;}
+  .gstatv{font-size:13px;color:var(--dim);text-align:right;min-width:0;}
+  .gstatv.ok{color:#33C39E;}
+  .gstatv.warn{color:#E7C13B;}
+
   .callout{font-family:var(--serif);background:linear-gradient(180deg,rgba(231,193,59,.055),rgba(231,193,59,0));border:1px solid var(--line);
     border-left:2px solid #E7C13B;border-radius:12px;padding:15px 17px;margin-bottom:20px;font-size:15px;color:var(--dim);line-height:1.68;}
   .callout b{color:var(--chalk);font-weight:700;}
@@ -1310,7 +1319,7 @@ var PILLARS=[
   { name:'Finger strength', icon:'shield', color:'#33C39E', desc:'The gatekeeper. Most plateaus are fingers, not fitness.', time:'2×/week', methods:[
     { name:'Weighted max hangs', time:'2×/week', desc:'Half-crimp on a 20mm edge with added weight. The one number worth tracking for years, and the most reliable thing to move.', tags:['7–10s hang','3–5 min rest','5–6 sets','Add weight, not time','Fresh fingers only'] },
     { name:'Repeaters', time:'1×/week', desc:'Strength-endurance: still pulling hard on the fifth go of a project, not just the first.', tags:['7s on / 3s off × 6','2–3 min between sets','Lighter than max hangs'] },
-    { name:'Load management', time:'always', desc:'Two grades is a long campaign. Pulley injuries are what actually end it.', tags:['48h between finger sessions','Deload every 4th week','Joint ache ≠ muscle burn — stop'] }
+    { name:'Load management', time:'always', desc:'This is a long campaign. Pulley injuries are what actually end it.', tags:['48h between finger sessions','Deload every 4th week','Joint ache ≠ muscle burn — stop'] }
   ]},
   { name:'Power', icon:'zap', color:'#F0873B', desc:'Force delivered fast. The hard moves are rarely static.', time:'1–2×/week', methods:[
     { name:'Limit bouldering', time:'1–2×/week', desc:'Problems at your absolute ceiling — a few hard moves, full effort, properly rested between goes.', tags:['Fresh, after a full warm-up','3–5 min between goes','~45 min, then stop'] },
@@ -1340,12 +1349,81 @@ function tint(hex, a){
   return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
 }
 
+/* Matched against exercise names to spot finger work. Deliberately loose —
+   it has to survive you renaming presets or typing your own. */
+var FINGER_RE=/hang|board|repeater|crimp|edge/i;
+
+function daysApart(a,b){ return Math.round((parseLocal(b)-parseLocal(a))/86400000); }
+
+/* The guide prescribes cadences; the app already knows whether you kept them.
+   This is the bridge between the two. */
+function guideStatus(){
+  var today=todayStr(), i, d;
+  var asc=sessions.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+
+  var lastFinger=null, fingerRecent=0;
+  asc.forEach(function(s){
+    var isFinger=(s.exercises||[]).some(function(e){ return FINGER_RE.test(e.name||''); });
+    if(!isFinger) return;
+    lastFinger=s.date;
+    if(daysApart(s.date,today)<=13) fingerRecent++;
+  });
+
+  /* Consecutive days ending at the most recent climbing day. */
+  var climbDays={};
+  asc.forEach(function(s){ if(((s.boulders||[]).length+(s.routes||[]).length)>0) climbDays[s.date]=true; });
+  var days=Object.keys(climbDays).sort(), last=days[days.length-1]||null, streak=0;
+  if(last){ d=last; while(climbDays[d]){ streak++; d=addDays(d,-1); } }
+
+  /* How long since a week with nothing in it. */
+  var wk={};
+  asc.forEach(function(s){ wk[weekStart(s.date)]=true; });
+  var w=weekStart(today), loaded=0;
+  for(i=0;i<12;i++){ if(!wk[w]) break; loaded++; w=addDays(w,-7); }
+
+  return { any:asc.length>0, today:today, lastFinger:lastFinger, fingerRecent:fingerRecent,
+           streak:streak, lastClimb:last, loadedWeeks:loaded };
+}
+
+function statusRow(label, text, tone){
+  return h('div',{class:'gstat'},
+    h('span',{class:'gstatk'}, label),
+    h('span',{class:'gstatv'+(tone?' '+tone:'')}, text)
+  );
+}
+
+function buildStatus(){
+  var st=guideStatus();
+  if(!st.any) return null;                 /* nothing logged — nothing to say */
+  var card=h('div',{class:'card'});
+  card.appendChild(h('div',{class:'lbl first'},'Where you are'));
+
+  var fd = st.lastFinger==null ? null : daysApart(st.lastFinger, st.today);
+  card.appendChild(statusRow('Fingers',
+    fd==null ? 'no finger work logged yet'
+      : (fd===0 ? 'today' : fd===1 ? 'yesterday' : fd+' days ago')
+        + ' · ' + st.fingerRecent + ' in the last 2 weeks',
+    (fd==null || fd>5) ? 'warn' : 'ok'));
+
+  card.appendChild(statusRow('Load',
+    st.streak>1 ? st.streak+' climbing days in a row' : 'rested',
+    st.streak>=3 ? 'warn' : 'ok'));
+
+  card.appendChild(statusRow('Deload',
+    st.loadedWeeks>=1 ? st.loadedWeeks+' week'+(st.loadedWeeks===1?'':'s')+' without a break' : 'easy week',
+    st.loadedWeeks>=4 ? 'warn' : 'ok'));
+
+  return card;
+}
+
 function buildGuide(){
   var wrap=h('div',{class:'wrap wide'});
   wrap.appendChild(h('div',{class:'ghead'},
     h('div',{class:'gtitle'},'Getting to ', h('em',{},'Vhard')),
     h('div',{class:'gsub'},'Three pillars, in priority order.')
   ));
+  var status=buildStatus();
+  if(status) wrap.appendChild(status);      /* null until something is logged */
   wrap.appendChild(h('div',{class:'callout'},
     h('b',{},'Consistency and healthy fingers'),
     ' decide it. Expect long flat stretches.'
