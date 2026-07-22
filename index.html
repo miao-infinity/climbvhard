@@ -109,11 +109,22 @@
   .planin{flex:1;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:14px;outline:none;padding:2px 0;min-width:0;}
   .planin::placeholder{color:var(--muted);}
 
+  /* unsaved-changes bar */
+  .savebar{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    background:rgba(32,28,23,.97);border:1px solid #4a412c;border-radius:14px;padding:11px 12px;
+    margin-top:14px;margin-bottom:calc(4px + env(safe-area-inset-bottom));box-shadow:0 8px 26px rgba(0,0,0,.5);}
+  .savebar .msg{font-family:var(--mono);font-size:11px;color:#E7C13B;letter-spacing:.06em;flex:1;min-width:96px;display:flex;align-items:center;gap:7px;}
+  .savedot{width:7px;height:7px;border-radius:50%;background:#E7C13B;flex:none;}
+  .draftnote{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:-6px 2px 12px;}
+
   /* exercise quick-add */
   .chipgroup{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:7px;}
   .chipglabel{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;color:var(--muted);width:62px;flex:none;}
   .chip.add{border-style:solid;color:var(--dim);}
   .chip.add:hover{color:var(--chalk);}
+  .presetwrap{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:1px 3px 1px 10px;background:var(--raise);}
+  .presetin{background:transparent;border:none;padding:4px 0;font-size:12px;font-weight:600;width:100px;min-width:0;}
+  .presetin:focus{border:none;}
 
   /* exercises */
   .ex{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;background:var(--raise);}
@@ -181,33 +192,43 @@
   .dmsg.err{color:#E5484D;}
 
   /* guide */
-  .callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid #E7C13B;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13.5px;color:var(--dim);line-height:1.6;}
-  .callout b{color:var(--chalk);}
-  .pillars{display:flex;flex-direction:column;gap:16px;}
-  .pcard{background:var(--panel);border:1px solid var(--line);border-top:3px solid transparent;border-radius:16px;padding:18px 18px 8px;min-width:0;}
-  .phead{display:flex;align-items:flex-start;gap:12px;}
-  .picon{width:40px;height:40px;border-radius:11px;display:grid;place-items:center;flex:none;background:rgba(255,255,255,.05);}
+  .ghead{margin:4px 2px 20px;}
+  .gtitle{font-size:27px;font-weight:800;letter-spacing:-.022em;line-height:1.14;color:var(--chalk);}
+  .gtitle em{font-style:normal;color:#E5484D;}
+  .gsub{font-size:13.5px;color:var(--muted);margin-top:9px;max-width:58ch;line-height:1.65;}
+  .callout{background:linear-gradient(180deg,rgba(231,193,59,.055),rgba(231,193,59,0));border:1px solid var(--line);
+    border-left:2px solid #E7C13B;border-radius:12px;padding:15px 17px;margin-bottom:20px;font-size:13.5px;color:var(--dim);line-height:1.68;}
+  .callout b{color:var(--chalk);font-weight:700;}
+
+  .pillars{display:flex;flex-direction:column;gap:14px;}
+  .pcard{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px 18px 12px;min-width:0;}
+  .phead{display:flex;align-items:flex-start;gap:13px;}
+  .picon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;}
   .ptitle{flex:1;min-width:0;}
-  .prow{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;}
-  .pname{font-size:17px;font-weight:800;color:var(--chalk);}
-  .pstep{font-family:var(--mono);font-size:10.5px;color:var(--muted);letter-spacing:.1em;}
-  .ptime{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;flex:none;margin-left:auto;padding-top:2px;}
-  .pdesc{font-size:13px;color:var(--dim);margin-top:3px;}
-  .pmethods{margin-top:14px;border-top:1px solid var(--line);}
-  .pmethod{padding:14px 0;border-bottom:1px solid var(--line);}
-  .pmethod:last-child{border-bottom:none;}
-  .pmtop{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:5px;}
+  .prow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
+  .pstep{font-family:var(--mono);font-size:10px;letter-spacing:.14em;font-weight:700;padding:2px 7px;border-radius:6px;}
+  .pname{font-size:18px;font-weight:800;color:var(--chalk);letter-spacing:-.012em;}
+  .ptime{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .pdesc{font-size:13px;color:var(--dim);margin-top:8px;line-height:1.62;}
+  .pmethods{margin-top:15px;}
+  .pmethod{padding:15px 0;border-top:1px solid var(--line);}
+  .pmtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
   .pmname{font-weight:700;font-size:14.5px;color:var(--chalk);}
-  .pmtime{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;}
-  .pmdesc{margin:0;font-size:13px;color:var(--dim);line-height:1.55;}
-  .pmtags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px;}
-  .pmtag{font-size:12px;color:var(--dim);background:var(--raise);border:1px solid var(--line);border-radius:8px;padding:4px 9px;}
-  .res{display:flex;flex-direction:column;gap:9px;margin-top:10px;}
-  .reslink{display:block;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);text-decoration:none;transition:.15s;}
-  .reslink:hover{border-color:#4b463d;}
+  .pmtime{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:none;}
+  .pmdesc{margin:0;font-size:13px;color:var(--dim);line-height:1.65;}
+  .pmtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px;}
+  .pmtag{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--raise);border-radius:7px;padding:4px 9px;}
+
+  .res{display:grid;gap:9px;margin-top:10px;}
+  .reslink{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--panel);text-decoration:none;transition:.15s;}
+  .reslink:hover{border-color:#4b463d;background:var(--raise);}
+  .resmain{flex:1;min-width:0;}
   .resname{font-weight:700;font-size:14.5px;color:var(--chalk);}
-  .resdesc{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.55;}
-  .reshost{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px;}
+  .resdesc{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.58;}
+  .reshost{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:7px;}
+  .resarrow{color:var(--muted);flex:none;transition:.15s;}
+  .reslink:hover .resarrow{color:var(--chalk);}
+  @media (min-width:760px){ .res{grid-template-columns:1fr 1fr;} }
 
   button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #6aa9e8;outline-offset:2px;}
   @media (min-width:860px){ .pillars{flex-direction:row;align-items:flex-start;} .pcard{flex:1;} }
@@ -273,7 +294,7 @@ var DEFAULT_PLAN={ Mon:'Strength — hangboard + frenchies', Tue:'Rest / mobilit
 /* Word-bounded so "Wrestling" is not mistaken for a rest day. */
 function isRest(f){ return !f || !f.trim() || /\brest\b/i.test(f); }
 
-var EX_GROUPS=[
+var DEFAULT_EX_GROUPS=[
   { label:'Strength',  items:['Hangboard','Frenchies'] },
   { label:'Power',     items:['Limit boulders','Campus'] },
   { label:'Technique', items:['Technique'] },
@@ -296,6 +317,7 @@ var ICONS={
   shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>',
   zap:'<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>',
   target:'<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+  arrow:'<line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>',
   up:'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
   moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
   rotate:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>'
@@ -347,8 +369,28 @@ function normalizePlan(raw, base){
 var plan = normalizePlan(load('crux:plan', null), DEFAULT_PLAN);
 function savePlan(){ save('crux:plan', plan); }
 
+/* Quick-add presets are editable, so a typo like "Dead life" can be fixed in
+   place rather than living in the chip row forever. */
+function normalizePresets(raw){
+  if(!Array.isArray(raw)) return null;
+  var out=raw.map(function(g){
+    if(!g || typeof g!=='object') return null;
+    var items=Array.isArray(g.items) ? g.items.filter(function(s){ return typeof s==='string'; })
+      .map(function(s){ return s.slice(0,40); }).slice(0,24) : [];
+    return { label:String(g.label||'').slice(0,20), items:items };
+  }).filter(Boolean);
+  return out.length ? out : null;
+}
+var exPresets = normalizePresets(load('crux:expresets', null)) || cloneOf(DEFAULT_EX_GROUPS);
+function savePresets(){ save('crux:expresets', exPresets); }
+
 var tab='climb', curDate=todayStr(), range='month';
 var openTags=null, openSession=null, resetArmed=false, dataMsg=null, planOpen=false;
+var exEdit=false;
+/* Set to a date by Save, so the logging pages blank out ready for the next
+   entry. Cleared as soon as you move to another date, which reloads that
+   day's saved work for correction. */
+var justSaved=null;
 var tabsHost, viewHost;
 
 function saveSessions(){ save('crux:sessions', sessions); }
@@ -388,23 +430,116 @@ function migrate(){
 }
 migrate();
 
-/* ---------- session accessors (edits write straight through) ---------- */
+/* ---------- session accessors ----------
+   Edits do NOT go straight into `sessions`. They go into a per-date draft, and
+   only land when Save is pressed — so a stray tap is discardable. Drafts are
+   themselves persisted, so staging cannot cost you work either: close the tab
+   mid-session and the unsaved draft is still there next time.
+   Drafts are keyed by date, so switching days never silently drops one. */
+var drafts = load('crux:drafts', null) || {};
+function persistDrafts(){ save('crux:drafts', drafts); }
+function cloneOf(o){ return JSON.parse(JSON.stringify(o)); }
+function blankSession(date){ return { id:newId(), date:date, notes:'', rpe:null, boulders:[], routes:[], exercises:[] }; }
+
 function findSession(date){
   for(var i=0;i<sessions.length;i++) if(sessions[i].date===date) return sessions[i];
   return null;
 }
-function ensureSession(date){
-  var s=findSession(date);
-  if(!s){ s={ id:newId(), date:date, notes:'', rpe:null, boulders:[], routes:[], exercises:[] }; sessions.push(s); }
-  return s;
+/* What the Climb/Train tabs render: the draft if one exists, else what is
+   saved — except straight after a save, when the page is deliberately blank so
+   you can log the next thing. */
+function viewOf(date){
+  if(drafts[date]) return drafts[date];
+  if(justSaved===date) return null;
+  return findSession(date);
 }
+/* What any edit handler mutates. Normally seeds from the saved session, so
+   editing an already-saved day stages rather than writing live. Straight after
+   a save it starts blank and is marked to append, so a second save adds to the
+   day instead of replacing what is already there. */
+function editable(){
+  if(!drafts[curDate]){
+    if(justSaved===curDate){
+      var fresh=blankSession(curDate); fresh.append=true; drafts[curDate]=fresh;
+    } else {
+      var s=findSession(curDate);
+      drafts[curDate] = s ? cloneOf(s) : blankSession(curDate);
+    }
+  }
+  return drafts[curDate];
+}
+function touch(){ persistDrafts(); }
+
 function isEmptySession(s){
   return !(s.boulders||[]).length && !(s.routes||[]).length && !(s.exercises||[]).length && !(s.notes||'').trim();
 }
+function sessionShape(s){
+  if(!s) return JSON.stringify({notes:'',rpe:null,boulders:[],routes:[],exercises:[]});
+  return JSON.stringify({ notes:(s.notes||''), rpe:(s.rpe==null?null:s.rpe),
+    boulders:(s.boulders||[]), routes:(s.routes||[]), exercises:(s.exercises||[]) });
+}
+function isDirty(date){
+  var dr=drafts[date];
+  if(!dr) return false;
+  if(dr.append) return !isEmptySession(dr);        /* a fresh post-save entry */
+  return sessionShape(dr) !== sessionShape(findSession(date));
+}
+function saveDraftSession(){
+  var d=curDate, dr=drafts[d], i, at=-1, cur;
+  if(!dr) return;
+  for(i=0;i<sessions.length;i++) if(sessions[i].date===d){ at=i; break; }
+
+  if(dr.append && at>=0){
+    /* Second save on a day that is already recorded: add to it, never replace,
+       so the earlier entries survive. */
+    cur=sessions[at];
+    cur.boulders=cur.boulders.concat(cloneOf(dr.boulders));
+    cur.routes=cur.routes.concat(cloneOf(dr.routes));
+    cur.exercises=cur.exercises.concat(cloneOf(dr.exercises));
+    if((dr.notes||'').trim()) cur.notes = (cur.notes||'').trim() ? cur.notes+'\n\n'+dr.notes : dr.notes;
+    if(dr.rpe!=null) cur.rpe=dr.rpe;
+  } else {
+    var clean=cloneOf(dr); delete clean.append;
+    if(isEmptySession(clean)){ if(at>=0) sessions.splice(at,1); }   /* emptied a day = delete it */
+    else if(at>=0) sessions[at]=clean;
+    else sessions.push(clean);
+  }
+
+  delete drafts[d]; persistDrafts();
+  justSaved=d;                       /* blanks the logging pages for the next entry */
+  commit(); renderView();
+}
+function discardDraftSession(){ delete drafts[curDate]; persistDrafts(); renderView(); }
+
 function commit(){
   sessions=sessions.filter(function(s){ return !isEmptySession(s); });
   sessions.sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; });
   saveSessions();
+}
+
+/* Shown on both Climb and Train — one draft per day, so one bar serves both.
+   Always in the DOM and toggled by display, never conditionally rendered: text
+   fields call refreshSaveBar() on input, and a re-render there would blur the
+   field and drop the caret mid-word. */
+var saveBarEl=null, draftNoteEl=null;
+function saveBar(){
+  saveBarEl = h('div',{class:'savebar'},
+    h('span',{class:'msg'}, h('span',{class:'savedot'}), 'UNSAVED'),
+    h('button',{class:'btn ghost sm', onclick:discardDraftSession},'Discard'),
+    h('button',{class:'btn primary sm', onclick:saveDraftSession},'Save session')
+  );
+  saveBarEl.style.display = isDirty(curDate) ? '' : 'none';
+  return saveBarEl;
+}
+function draftNote(){
+  draftNoteEl = h('div',{class:'draftnote'},'DRAFT — not saved yet');
+  draftNoteEl.style.display = isDirty(curDate) ? '' : 'none';
+  return draftNoteEl;
+}
+function refreshSaveBar(){
+  var on = isDirty(curDate);
+  if(saveBarEl) saveBarEl.style.display = on ? '' : 'none';
+  if(draftNoteEl) draftNoteEl.style.display = on ? '' : 'none';
 }
 function sessionsAsc(){
   return sessions.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
@@ -439,8 +574,8 @@ function renderTabs(){
 function dateBar(){
   return h('div',{style:{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',marginBottom:'14px'}},
     h('input',{type:'date', class:'inp', value:curDate, 'aria-label':'Session date',
-      onchange:function(e){ curDate=e.target.value||todayStr(); openTags=null; renderView(); }}),
-    h('button',{class:'btn ghost sm', onclick:function(){ curDate=todayStr(); renderView(); }},'Today')
+      onchange:function(e){ curDate=e.target.value||todayStr(); openTags=null; justSaved=null; renderView(); }}),
+    h('button',{class:'btn ghost sm', onclick:function(){ curDate=todayStr(); justSaved=null; renderView(); }},'Today')
   );
 }
 
@@ -524,9 +659,10 @@ function planBody(curDow, headEl){
 /* ---------- climb view ---------- */
 function buildClimb(){
   var wrap=h('div',{class:'wrap'});
-  var s=findSession(curDate);
+  var s=viewOf(curDate);
   wrap.appendChild(planStrip());
   wrap.appendChild(dateBar());
+  wrap.appendChild(draftNote());
 
   /* --- boulders --- */
   var card=h('div',{class:'card'});
@@ -536,9 +672,8 @@ function buildClimb(){
   V_GRADES.forEach(function(g){
     picker.appendChild(h('button',{class:'gpill', style:{color:vColor(g)}, 'aria-label':'Log a V'+g,
       onclick:function(){
-        var ses=ensureSession(curDate);
-        ses.boulders.push({ id:newId(), grade:g, attempts:1, sent:true, tags:[] });
-        commit(); renderView();
+        editable().boulders.push({ id:newId(), grade:g, attempts:1, sent:true, tags:[] });
+        touch(); renderView();
       }},'V'+g));
   });
   card.appendChild(picker);
@@ -558,9 +693,8 @@ function buildClimb(){
   rcard.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},
     sel,
     h('button',{class:'btn ghost sm', onclick:function(){
-      var ses=ensureSession(curDate);
-      ses.routes.push({ id:newId(), grade:Number(sel.value), attempts:1, sent:true, tags:[] });
-      commit(); renderView();
+      editable().routes.push({ id:newId(), grade:Number(sel.value), attempts:1, sent:true, tags:[] });
+      touch(); renderView();
     }},'Add route')
   ));
   var rlist=h('div',{style:{marginTop:'12px'}});
@@ -575,15 +709,13 @@ function buildClimb(){
   ncard.appendChild(h('div',{class:'lbl first'},'Session notes'));
   ncard.appendChild(h('textarea',{class:'inp', value:(s&&s.notes)||'',
     placeholder:'How it went — beta, conditions, what failed, how you felt.',
-    oninput:function(e){
-      var ses=ensureSession(curDate); ses.notes=e.target.value; commit();
-    }}));
+    oninput:function(e){ editable().notes=e.target.value; touch(); refreshSaveBar(); }}));
   var rpeRow=h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginTop:'12px',flexWrap:'wrap'}});
   rpeRow.appendChild(h('span',{class:'attlbl'},'EFFORT'));
   for(var n=1;n<=10;n++){ (function(n){
     var on=s&&s.rpe===n;
     var b=h('button',{class:'chip'+(on?' on':''), style:{minWidth:'30px',textAlign:'center'}, onclick:function(){
-      var ses=ensureSession(curDate); ses.rpe = ses.rpe===n ? null : n; commit(); renderView();
+      var ses=editable(); ses.rpe = ses.rpe===n ? null : n; touch(); renderView();
     }}, String(n));
     if(on) b.style.background=rampColor((n-1)/9), b.style.color='#16130F';
     rpeRow.appendChild(b);
@@ -592,10 +724,19 @@ function buildClimb(){
   wrap.appendChild(ncard);
 
   if(!s) wrap.appendChild(h('p',{class:'hint', style:{textAlign:'center'}},'Nothing logged for this day yet.'));
+  wrap.appendChild(saveBar());
   return wrap;
 }
 
 function climbRow(item, kind, label, color){
+  /* `item` may belong to the saved session, which must never be mutated in
+     place. Every handler re-resolves the same climb inside the draft, so the
+     first tap clones the day and edits the copy. */
+  function live(){
+    var d=editable(), arr = kind==='boulder' ? d.boulders : d.routes, i;
+    for(i=0;i<arr.length;i++) if(arr[i].id===item.id) return arr[i];
+    return null;
+  }
   var row=h('div',{class:'climb'});
   var top=h('div',{class:'climbtop'});
   top.appendChild(h('span',{class:'cg', style:{background:color}}, label));
@@ -604,22 +745,24 @@ function climbRow(item, kind, label, color){
   top.appendChild(h('span',{class:'attlbl'},'TRIES'));
   top.appendChild(h('div',{class:'stepper'},
     h('button',{'aria-label':'One fewer attempt', onclick:function(){
-      item.attempts=Math.max(1,item.attempts-1); val.textContent=item.attempts; commit();
+      var it=live(); if(!it) return;
+      it.attempts=Math.max(1,it.attempts-1); val.textContent=it.attempts; touch(); refreshSaveBar();
     }}, ic('minus',14)),
     val,
     h('button',{'aria-label':'One more attempt', onclick:function(){
-      item.attempts=item.attempts+1; val.textContent=item.attempts; commit();
+      var it=live(); if(!it) return;
+      it.attempts=it.attempts+1; val.textContent=it.attempts; touch(); refreshSaveBar();
     }}, ic('plus',14))
   ));
 
   top.appendChild(h('button',{class:'sentbtn'+(item.sent?' on':''), 'aria-pressed':String(!!item.sent),
-    onclick:function(){ item.sent=!item.sent; commit(); renderView(); }}, item.sent?'sent':'proj'));
+    onclick:function(){ var it=live(); if(!it) return; it.sent=!it.sent; touch(); renderView(); }}, item.sent?'sent':'proj'));
 
   top.appendChild(h('button',{class:'del', 'aria-label':'Remove '+label, onclick:function(){
-    var s=findSession(curDate); if(!s) return;
-    var arr = kind==='boulder' ? s.boulders : s.routes;
-    var i=arr.indexOf(item); if(i>=0) arr.splice(i,1);
-    openTags=null; commit(); renderView();
+    var d=editable();
+    var arr = kind==='boulder' ? d.boulders : d.routes, i;
+    for(i=0;i<arr.length;i++) if(arr[i].id===item.id){ arr.splice(i,1); break; }
+    openTags=null; touch(); renderView();
   }}, ic('x',16)));
   row.appendChild(top);
 
@@ -629,7 +772,8 @@ function climbRow(item, kind, label, color){
   row.appendChild(h('div',{style:{display:'flex',marginTop:'8px'}}, tagLine));
 
   if(openTags===item.id){
-    row.appendChild(tagPicker(kind, item, function(){ commit(); renderView(); }));
+    var it=live();
+    if(it) row.appendChild(tagPicker(kind, it, function(){ touch(); renderView(); }));
   }
   return row;
 }
@@ -658,9 +802,10 @@ function fmtSets(sets){
 
 function buildTrain(){
   var wrap=h('div',{class:'wrap'});
-  var s=findSession(curDate);
+  var s=viewOf(curDate);
   wrap.appendChild(planStrip());
   wrap.appendChild(dateBar());
+  wrap.appendChild(draftNote());
 
   var card=h('div',{class:'card'});
   card.appendChild(h('div',{class:'lbl first'},'Exercises'));
@@ -676,30 +821,54 @@ function buildTrain(){
      prefill-from-last-time behaviour. */
   function addNamed(nm){
     nm=(nm||'').trim(); if(!nm) return;
-    var ses=ensureSession(curDate);
     var prev=lastTimeFor(nm, curDate);
     var sets = prev ? prev.sets.map(function(st){ return { weight:st.weight, reps:st.reps }; }) : [{weight:null,reps:null}];
     if(!sets.length) sets=[{weight:null,reps:null}];
-    ses.exercises.push({ id:newId(), name:nm, sets:sets });
-    commit(); renderView();
+    editable().exercises.push({ id:newId(), name:nm, sets:sets });
+    touch(); renderView();
   }
   function addExercise(){ var nm=addIn.value; addIn.value=''; addNamed(nm); }
   addIn.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addExercise(); } });
   card.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center'}},
     addIn, h('button',{class:'btn ghost sm', style:{flex:'none'}, onclick:addExercise},'Add')));
 
-  EX_GROUPS.forEach(function(g, gi){
-    var grp=h('div',{class:'chipgroup', style:gi===0?{marginTop:'13px'}:null});
+  card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginTop:'15px',marginBottom:'9px'}},
+    h('span',{class:'chipglabel', style:{width:'auto',flex:'1'}}, exEdit?'EDITING PRESETS':'QUICK ADD'),
+    h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit')
+  ));
+
+  exPresets.forEach(function(g){
+    var grp=h('div',{class:'chipgroup'});
     grp.appendChild(h('span',{class:'chipglabel'}, g.label));
-    g.items.forEach(function(nm){
-      grp.appendChild(h('button',{class:'chip add', onclick:function(){ addNamed(nm); }}, nm));
+    g.items.forEach(function(nm, ni){
+      if(exEdit){
+        var inp=h('input',{class:'inp presetin', value:nm, maxLength:40, 'aria-label':'Rename '+nm,
+          oninput:function(e){ g.items[ni]=e.target.value; savePresets(); }});
+        grp.appendChild(h('span',{class:'presetwrap'}, inp,
+          h('button',{class:'del','aria-label':'Delete preset '+nm, onclick:function(){
+            g.items.splice(ni,1); savePresets(); renderView();
+          }}, ic('x',14))));
+      } else {
+        grp.appendChild(h('button',{class:'chip add', onclick:function(){ addNamed(nm); }}, nm));
+      }
     });
+    if(exEdit) grp.appendChild(h('button',{class:'chip add', onclick:function(){
+      g.items.push('New exercise'); savePresets(); renderView();
+    }}, ic('plus',12)));
     card.appendChild(grp);
   });
-  var customRow=h('div',{class:'chipgroup'});
-  customRow.appendChild(h('span',{class:'chipglabel'},'Custom'));
-  customRow.appendChild(h('button',{class:'chip add', onclick:function(){ addIn.focus(); }}, ic('plus',12),' name it'));
-  card.appendChild(customRow);
+
+  if(exEdit){
+    card.appendChild(h('div',{class:'foot', style:{marginTop:'6px'}},
+      h('button',{class:'reset', onclick:function(){
+        exPresets=cloneOf(DEFAULT_EX_GROUPS); savePresets(); renderView();
+      }}, ic('rotate',13),'Reset presets to default')));
+  } else {
+    var customRow=h('div',{class:'chipgroup'});
+    customRow.appendChild(h('span',{class:'chipglabel'},'Custom'));
+    customRow.appendChild(h('button',{class:'chip add', onclick:function(){ addIn.focus(); }}, ic('plus',12),' name it'));
+    card.appendChild(customRow);
+  }
 
   var list=h('div',{style:{marginTop:'12px'}});
   ((s&&s.exercises)||[]).forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
@@ -707,18 +876,25 @@ function buildTrain(){
   else card.appendChild(h('p',{class:'hint', style:{marginTop:'14px',marginBottom:'2px'}},'No exercises logged for this day.'));
 
   wrap.appendChild(card);
+  wrap.appendChild(saveBar());
   return wrap;
 }
 
 function exerciseRow(ex){
+  /* Same rule as climbRow: never mutate the saved session in place. */
+  function live(){
+    var d=editable(), i;
+    for(i=0;i<d.exercises.length;i++) if(d.exercises[i].id===ex.id) return d.exercises[i];
+    return null;
+  }
   var row=h('div',{class:'ex'});
   row.appendChild(h('div',{class:'extop'},
     h('input',{class:'exname', value:ex.name, placeholder:'Exercise',
-      oninput:function(e){ ex.name=e.target.value; commit(); }}),
+      oninput:function(e){ var x=live(); if(!x) return; x.name=e.target.value; touch(); refreshSaveBar(); }}),
     h('button',{class:'del','aria-label':'Remove exercise', onclick:function(){
-      var s=findSession(curDate); if(!s) return;
-      var i=s.exercises.indexOf(ex); if(i>=0) s.exercises.splice(i,1);
-      commit(); renderView();
+      var d=editable(), i;
+      for(i=0;i<d.exercises.length;i++) if(d.exercises[i].id===ex.id){ d.exercises.splice(i,1); break; }
+      touch(); renderView();
     }}, ic('x',16))
   ));
 
@@ -726,28 +902,32 @@ function exerciseRow(ex){
   if(prev && fmtSets(prev.sets)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+': '+fmtSets(prev.sets)));
 
   ex.sets.forEach(function(st, i){
-    var wIn=h('input',{class:'setin', type:'number', inputMode:'decimal', placeholder:'kg',
+    var wIn=h('input',{class:'setin', type:'number', inputMode:'decimal', placeholder:'weight',
       value:(st.weight!=null?String(st.weight):''), 'aria-label':'Set '+(i+1)+' weight',
-      oninput:function(e){ var v=e.target.value; st.weight = v===''?null:Number(v); commit(); }});
+      oninput:function(e){ var x=live(); if(!x||!x.sets[i]) return;
+        var v=e.target.value; x.sets[i].weight = v===''?null:Number(v); touch(); refreshSaveBar(); }});
     var rIn=h('input',{class:'setin', type:'number', inputMode:'numeric', placeholder:'reps',
       value:(st.reps!=null?String(st.reps):''), 'aria-label':'Set '+(i+1)+' reps',
-      oninput:function(e){ var v=e.target.value; st.reps = v===''?null:Math.round(Number(v)); commit(); }});
+      oninput:function(e){ var x=live(); if(!x||!x.sets[i]) return;
+        var v=e.target.value; x.sets[i].reps = v===''?null:Math.round(Number(v)); touch(); refreshSaveBar(); }});
     row.appendChild(h('div',{class:'setrow'},
       h('span',{class:'setn'}, String(i+1)),
-      wIn, h('span',{class:'setunit'},'kg'),
+      wIn,
       h('span',{class:'setx'},'×'), rIn,
       h('button',{class:'del','aria-label':'Remove set '+(i+1), onclick:function(){
-        ex.sets.splice(i,1);
-        if(!ex.sets.length) ex.sets.push({weight:null,reps:null});
-        commit(); renderView();
+        var x=live(); if(!x) return;
+        x.sets.splice(i,1);
+        if(!x.sets.length) x.sets.push({weight:null,reps:null});
+        touch(); renderView();
       }}, ic('x',14))
     ));
   });
 
   row.appendChild(h('button',{class:'btn ghost sm', style:{marginTop:'9px'}, onclick:function(){
-    var last=ex.sets[ex.sets.length-1]||{weight:null,reps:null};
-    ex.sets.push({ weight:last.weight, reps:last.reps });
-    commit(); renderView();
+    var x=live(); if(!x) return;
+    var last=x.sets[x.sets.length-1]||{weight:null,reps:null};
+    x.sets.push({ weight:last.weight, reps:last.reps });
+    touch(); renderView();
   }},'+ set'));
   return row;
 }
@@ -807,7 +987,7 @@ function buildAnalysis(){
     stat(sendRate!=null?sendRate+'%':'—','Send rate'),
     stat(String(rSent),'Routes'),
     stat(hardR!=null?SPORT[hardR]:'—','Hardest rt', hardR!=null?rColor(hardR):null),
-    stat(volume?Math.round(volume/1000)+'t':'—','Volume'),
+    stat(volume?(volume>=1000?(volume/1000).toFixed(1)+'k':String(Math.round(volume))):'—','Load'),
     stat(String(setCount),'Sets')
   );
   wrap.appendChild(stats);
@@ -921,7 +1101,7 @@ function buildAnalysis(){
     bn.forEach(function(nm){
       ec.appendChild(h('div',{class:'sline', style:{justifyContent:'space-between'}},
         h('span',{style:{color:'var(--chalk)'}}, nm),
-        h('b',{}, best[nm].weight+'kg × '+best[nm].reps+'  ·  '+fmtShort(best[nm].date))
+        h('b',{}, best[nm].weight+' × '+best[nm].reps+'  ·  '+fmtShort(best[nm].date))
       ));
     });
     wrap.appendChild(ec);
@@ -1004,6 +1184,7 @@ function sessionCard(s){
   body.appendChild(h('div',{class:'foot'},
     h('button',{class:'reset', onclick:function(){
       sessions=sessions.filter(function(x){ return x.id!==s.id; });
+      delete drafts[s.date]; persistDrafts();      /* no orphan draft resurrecting it */
       openSession=null; commit(); renderView();
     }}, ic('trash',13),'Delete this session')
   ));
@@ -1037,9 +1218,19 @@ var RESOURCES=[
   { name:'The Climbing Doctor', url:'https://theclimbingdoctor.com', desc:'Injury assessment and rehab protocols written for climbers.' }
 ];
 
+/* Tint a hex at low alpha, so each pillar's icon tile and index badge pick up
+   its own accent instead of a flat grey. */
+function tint(hex, a){
+  var c=hexToRgb(hex);
+  return 'rgba('+c[0]+','+c[1]+','+c[2]+','+a+')';
+}
+
 function buildGuide(){
   var wrap=h('div',{class:'wrap wide'});
-  wrap.appendChild(h('p',{class:'hint'},'Getting to V8 — three pillars, in order of priority.'));
+  wrap.appendChild(h('div',{class:'ghead'},
+    h('div',{class:'gtitle'},'Getting to ', h('em',{},'V8')),
+    h('div',{class:'gsub'},'Three pillars, in order of priority. Work them in that order — technique will not rescue fingers that are not strong enough yet.')
+  ));
   wrap.appendChild(h('div',{class:'callout'},
     h('b',{},'A note on the timeline. '),
     'V6+ to V8 is two grades. For most people that is seasons, not weeks — so the thing that decides it is ',
@@ -1048,12 +1239,12 @@ function buildGuide(){
   ));
   var pillars=h('div',{class:'pillars'});
   PILLARS.forEach(function(p,idx){
-    var card=h('div',{class:'pcard', style:{borderTopColor:p.color}});
+    var card=h('div',{class:'pcard'});
     card.appendChild(h('div',{class:'phead'},
-      h('div',{class:'picon', style:{color:p.color}}, ic(p.icon,20)),
+      h('div',{class:'picon', style:{color:p.color, background:tint(p.color,.12)}}, ic(p.icon,20)),
       h('div',{class:'ptitle'},
         h('div',{class:'prow'},
-          h('span',{class:'pstep'},'0'+(idx+1)),
+          h('span',{class:'pstep', style:{color:p.color, background:tint(p.color,.14)}},'0'+(idx+1)),
           h('span',{class:'pname'}, p.name),
           h('span',{class:'ptime'}, p.time)),
         h('p',{class:'pdesc'}, p.desc))
@@ -1074,9 +1265,11 @@ function buildGuide(){
   var res=h('div',{class:'res'});
   RESOURCES.forEach(function(r){
     res.appendChild(h('a',{class:'reslink', href:r.url, target:'_blank', rel:'noopener noreferrer'},
-      h('div',{class:'resname'}, r.name),
-      h('div',{class:'resdesc'}, r.desc),
-      h('div',{class:'reshost'}, r.url.replace(/^https?:\/\//,''))));
+      h('div',{class:'resmain'},
+        h('div',{class:'resname'}, r.name),
+        h('div',{class:'resdesc'}, r.desc),
+        h('div',{class:'reshost'}, r.url.replace(/^https?:\/\//,''))),
+      h('span',{class:'resarrow'}, ic('arrow',16))));
   });
   wrap.appendChild(res);
   return wrap;
@@ -1084,7 +1277,8 @@ function buildGuide(){
 
 /* ---------- backup / restore ---------- */
 function exportData(){
-  var payload={ app:'crux', schema:SCHEMA, exported:new Date().toISOString(), sessions:sessions, tags:tags, plan:plan };
+  var payload={ app:'crux', schema:SCHEMA, exported:new Date().toISOString(),
+    sessions:sessions, tags:tags, plan:plan, presets:exPresets };
   var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   var a=h('a',{href:url, download:'crux-backup-'+todayStr()+'.json'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -1168,6 +1362,8 @@ function importData(file){
     if(data.plan && typeof data.plan==='object'){
       plan=normalizePlan(data.plan, plan); savePlan(); planNote=' Plan restored.';
     }
+    var p=normalizePresets(data.presets);
+    if(p){ exPresets=p; savePresets(); }
     commit();
     dataMsg={ text:'Imported '+added+' session'+(added===1?'':'s')+
       (merged?', merged into '+merged+' existing day'+(merged===1?'':'s'):'')+
@@ -1191,21 +1387,6 @@ function buildData(){
   if(dataMsg) card.appendChild(h('div',{class:'dmsg '+(dataMsg.ok?'ok':'err')}, dataMsg.text));
   wrap.appendChild(card);
 
-  var tcard=h('div',{class:'card'});
-  tcard.appendChild(h('div',{class:'lbl first'},'Tags'));
-  tcard.appendChild(h('p',{class:'sub'},'Used on boulders and routes. Removing a tag here leaves it on climbs already logged.'));
-  ['boulder','route'].forEach(function(kind){
-    tcard.appendChild(h('div',{class:'attlbl', style:{marginTop:'10px',marginBottom:'6px',display:'block'}}, kind==='boulder'?'BOULDER':'ROUTE'));
-    var row=h('div',{style:{display:'flex',flexWrap:'wrap',gap:'6px'}});
-    tags[kind].forEach(function(t){
-      row.appendChild(h('button',{class:'chip', title:'Remove '+t, onclick:function(){
-        tags[kind]=tags[kind].filter(function(x){ return x!==t; }); saveTags(); renderView();
-      }}, t+' ×'));
-    });
-    tcard.appendChild(row);
-  });
-  wrap.appendChild(tcard);
-
   var stats=h('div',{class:'card'});
   stats.appendChild(h('div',{class:'lbl first'},'Stored'));
   var nb=0,nr=0,ne=0;
@@ -1215,9 +1396,9 @@ function buildData(){
   stats.appendChild(h('div',{class:'foot'},
     h('button',{class:'reset', onclick:function(){
       if(!resetArmed){ resetArmed=true; dataMsg=null; renderView(); setTimeout(function(){ resetArmed=false; },4000); return; }
-      sessions=[]; tags={ boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
-      plan=normalizePlan(null, DEFAULT_PLAN);
-      saveSessions(); saveTags(); savePlan(); resetArmed=false;
+      sessions=[]; drafts={}; justSaved=null; tags={ boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
+      plan=normalizePlan(null, DEFAULT_PLAN); exPresets=cloneOf(DEFAULT_EX_GROUPS);
+      saveSessions(); persistDrafts(); saveTags(); savePlan(); savePresets(); resetArmed=false;
       dataMsg={ text:'All data erased.', ok:false }; renderView();
     }}, ic('trash',13), resetArmed?'Tap again to erase everything':'Reset all data')));
   wrap.appendChild(stats);
