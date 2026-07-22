@@ -12,43 +12,60 @@
 <meta name="apple-mobile-web-app-title" content="CRUX">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..700;1,400&display=swap">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='96'%20fill='%2316130F'/%3E%3Cpath%20d='M156%20156L356%20356M356%20156L156%20356'%20stroke='%23E5484D'%20stroke-width='58'%20stroke-linecap='round'%20fill='none'/%3E%3C/svg%3E">
 <style>
   :root{
     --panel:#201C17; --raise:#2A251F; --line:#332D26;
     --chalk:#F1EDE6; --dim:#B7B0A5; --muted:#7E766B;
-    --font:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
-    --mono:'JetBrains Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,monospace;
+    --font:'Crimson Pro',ui-serif,Georgia,'Times New Roman',serif;
+    --mono:'Crimson Pro',ui-serif,Georgia,'Times New Roman',serif;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;min-height:100%;}
   body{
     font-family:var(--font); color:var(--chalk);
     background:#16130F; background:radial-gradient(120% 80% at 50% -8%, #221D15 0%, #16130F 58%) fixed;
-    -webkit-font-smoothing:antialiased; line-height:1.45;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    /* Crimson Pro runs small and its default figures are old-style, which
+       wrecks column alignment in the log. */
+    font-size:17px; font-variant-numeric:tabular-nums lining-nums;
   }
-  .app{padding-bottom:env(safe-area-inset-bottom);}
+  /* Nav is fixed to the bottom for thumb reach, so content clears it. */
+  .app{padding-bottom:calc(78px + env(safe-area-inset-bottom));}
   .top{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 18px 0;max-width:760px;margin:0 auto;}
   .brand{display:flex;align-items:baseline;gap:11px;}
   .logo{font-weight:800;font-size:22px;letter-spacing:.16em;}
   .logo .x{color:#E5484D;}
-  .tag{font-family:var(--mono);font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.16em;}
+  .tag{font-family:var(--mono);font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.16em;}
 
-  .tabs{display:flex;gap:4px;margin:16px auto 0;max-width:760px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;width:calc(100% - 28px);}
-  .tab{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 4px;border:none;background:transparent;color:var(--muted);font-family:var(--font);font-weight:600;font-size:12.5px;white-space:nowrap;border-radius:9px;cursor:pointer;transition:.15s;}
+  .tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:30;
+    display:flex;gap:2px;width:100%;max-width:520px;
+    background:rgba(26,22,18,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));}
+  .tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    padding:6px 2px;border:none;background:transparent;color:var(--muted);font-family:var(--font);
+    font-weight:600;font-size:12px;white-space:nowrap;border-radius:10px;cursor:pointer;transition:.15s;}
   .tab:hover{color:var(--dim);}
-  .tab.active{background:var(--raise);color:var(--chalk);}
+  .tab.active{color:var(--chalk);}
+  .tab.active svg{color:#E5484D;}
   .tab svg{display:block;flex:none;}
 
   .wrap{padding:16px 14px 48px;max-width:760px;margin:0 auto;}
   .wrap.wide{max-width:1060px;}
   .hint{font-size:13px;color:var(--muted);margin:2px 2px 14px;}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
-  .lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--muted);margin:18px 0 9px;font-weight:600;}
+  .lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:12.5px;color:var(--muted);margin:18px 0 9px;font-weight:600;}
   .lbl.first{margin-top:0;}
   .sub{font-size:12.5px;color:var(--muted);margin:-4px 0 10px;}
 
-  .inp{background:var(--raise);border:1px solid var(--line);border-radius:9px;color:var(--chalk);font-family:var(--font);font-size:14px;padding:9px 10px;outline:none;width:100%;transition:.15s;}
+  /* iOS Safari zooms the whole page when a focused field is under 16px and
+     never zooms back — which is what made the layout look wrong mid-log.
+     Every focusable field stays at 16px for that reason. */
+  input,textarea,select{font-size:16px;}
+  .inp{background:var(--raise);border:1px solid var(--line);border-radius:9px;color:var(--chalk);font-family:var(--font);font-size:16px;padding:9px 10px;outline:none;width:100%;transition:.15s;}
   .inp:focus{border-color:#4b463d;}
   .inp::placeholder{color:var(--muted);}
   input[type=date].inp{font-family:var(--mono);color-scheme:dark;max-width:180px;}
@@ -89,57 +106,68 @@
   .chip:hover{color:var(--chalk);border-color:#4b463d;}
   .chip.on{background:var(--chalk);color:#16130F;border-color:transparent;}
   .newtag{display:flex;gap:6px;margin-top:8px;width:100%;}
-  .newtag .inp{font-size:12.5px;padding:6px 9px;}
-  .attlbl{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:none;}
+  .newtag .inp{font-size:16px;padding:6px 9px;}
+  .attlbl{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;}
 
   /* weekly plan strip */
   .plan{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
   .planhead{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;width:100%;background:transparent;border:none;font-family:var(--font);text-align:left;}
-  .plandow{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.1em;color:var(--muted);flex:none;}
+  .plandow{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--muted);flex:none;}
   .plantext{flex:1;min-width:0;font-size:13.5px;color:var(--chalk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .plantext.rest{color:var(--muted);}
   .planbody{padding:4px 13px 13px;border-top:1px solid var(--line);}
   .day{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);}
   .day:last-of-type{border-bottom:none;}
   .day.rest{opacity:.62;}
-  .dow{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.08em;color:var(--dim);width:30px;text-transform:uppercase;flex:none;}
+  .dow{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.08em;color:var(--dim);width:30px;text-transform:uppercase;flex:none;}
   .mk{display:inline-flex;align-items:center;flex:none;width:12px;justify-content:center;}
   .mk svg{color:var(--muted);}
   .dot{width:7px;height:7px;border-radius:50%;background:#E7C13B;}
-  .planin{flex:1;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:14px;outline:none;padding:2px 0;min-width:0;}
+  .planin{flex:1;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:16px;outline:none;padding:2px 0;min-width:0;}
   .planin::placeholder{color:var(--muted);}
 
   /* unsaved-changes bar */
-  .savebar{position:sticky;bottom:0;z-index:5;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  .savebar{position:sticky;bottom:calc(80px + env(safe-area-inset-bottom));z-index:5;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
     background:rgba(32,28,23,.97);border:1px solid #4a412c;border-radius:14px;padding:11px 12px;
     margin-top:14px;margin-bottom:calc(4px + env(safe-area-inset-bottom));box-shadow:0 8px 26px rgba(0,0,0,.5);}
-  .savebar .msg{font-family:var(--mono);font-size:11px;color:#E7C13B;letter-spacing:.06em;flex:1;min-width:96px;display:flex;align-items:center;gap:7px;}
+  .savebar .msg{font-family:var(--mono);font-size:12.5px;color:#E7C13B;letter-spacing:.06em;flex:1;min-width:96px;display:flex;align-items:center;gap:7px;}
   .savedot{width:7px;height:7px;border-radius:50%;background:#E7C13B;flex:none;}
-  .draftnote{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin:-6px 2px 12px;}
+  .draftnote{font-family:var(--mono);font-size:12px;color:var(--muted);margin:-6px 2px 12px;}
 
   /* exercise quick-add */
   .chipgroup{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:7px;}
-  .chipglabel{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:9.5px;color:var(--muted);width:62px;flex:none;}
+  .chipglabel{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:12px;color:var(--muted);width:62px;flex:none;}
   .chip.add{border-style:solid;color:var(--dim);}
   .chip.add:hover{color:var(--chalk);}
   .presetwrap{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:1px 3px 1px 10px;background:var(--raise);}
-  .presetin{background:transparent;border:none;padding:4px 0;font-size:12px;font-weight:600;width:100px;min-width:0;}
+  .presetin{background:transparent;border:none;padding:4px 0;font-size:16px;font-weight:600;width:100px;min-width:0;}
   .presetin:focus{border:none;}
 
   /* exercises */
   .ex{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;background:var(--raise);}
   .extop{display:flex;align-items:center;gap:9px;}
-  .exname{flex:1;min-width:0;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:15px;font-weight:600;outline:none;padding:2px 0;}
+  .exname{flex:1;min-width:0;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:16px;font-weight:600;outline:none;padding:2px 0;}
   .exname::placeholder{color:var(--muted);font-weight:400;}
-  .exlast{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px;}
+  .exlast{font-size:14px;color:var(--muted);margin-top:3px;font-style:italic;}
+  .sethead{display:flex;align-items:center;gap:7px;margin-top:11px;padding-bottom:2px;
+    font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .sethead>span:nth-child(2),.sethead>span:nth-child(4){flex:1;text-align:center;min-width:0;}
+  .addbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:14px;font-size:16px;}
   .setrow{display:flex;align-items:center;gap:7px;margin-top:7px;}
-  .setn{font-family:var(--mono);font-size:11px;color:var(--muted);width:16px;flex:none;}
-  .setin{background:#16130F;border:1px solid var(--line);border-radius:8px;color:var(--chalk);font-family:var(--mono);font-size:13.5px;padding:7px 8px;outline:none;width:100%;min-width:0;text-align:center;}
+  .setn{font-family:var(--mono);font-size:12.5px;color:var(--muted);width:16px;flex:none;}
+  .setin{background:#16130F;border:1px solid var(--line);border-radius:8px;color:var(--chalk);font-family:var(--mono);font-size:16px;padding:7px 8px;outline:none;width:100%;min-width:0;text-align:center;}
   .setin:focus{border-color:#4b463d;}
   .setx{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;}
   .setunit{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;width:22px;}
 
   /* stats + charts */
+  /* boulder / sport switch */
+  .seg{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px;}
+  .segbtn{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-family:var(--font);
+    font-weight:600;font-size:16px;border-radius:9px;cursor:pointer;transition:.15s;}
+  .segbtn:hover{color:var(--dim);}
+  .segbtn.on{background:var(--raise);color:var(--chalk);}
+
   .ranges{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
   .rchip{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;padding:7px 13px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s;}
   .rchip:hover{color:var(--dim);}
@@ -147,25 +175,25 @@
   .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
   .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;}
   .stat .n{font-family:var(--mono);font-size:19px;font-weight:700;color:var(--chalk);line-height:1.15;}
-  .stat .k{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:6px;}
+  .stat .k{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:6px;}
   .chart{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 12px;margin-bottom:12px;}
   .ctitle{font-size:13.5px;font-weight:700;color:var(--chalk);margin:0 2px 1px;}
-  .csub{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 2px 12px;}
+  .csub{font-family:var(--mono);font-size:13px;color:var(--muted);margin:0 2px 12px;}
   .cnote{font-size:13px;color:var(--muted);margin:2px;}
 
   .volrow{display:flex;align-items:flex-end;gap:6px;}
   .volcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
   .voltrack{height:110px;width:100%;display:flex;align-items:flex-end;}
   .volbar{width:100%;background:#33C39E;border-radius:5px 5px 0 0;min-height:3px;position:relative;display:flex;justify-content:center;}
-  .voln{position:absolute;top:-16px;font-family:var(--mono);font-size:11px;color:var(--dim);}
-  .vollab{font-family:var(--mono);font-size:9.5px;color:var(--muted);white-space:nowrap;}
+  .voln{position:absolute;top:-16px;font-family:var(--mono);font-size:12px;color:var(--dim);}
+  .vollab{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;}
 
   .pyrow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
   .pyg{font-family:var(--mono);font-size:12px;font-weight:700;width:38px;flex:none;}
   .pytrack{position:relative;flex:1;background:var(--raise);border-radius:6px;height:16px;overflow:hidden;}
   .pyghost{position:absolute;top:0;left:0;height:100%;border-radius:6px;opacity:.24;}
   .pybar{position:relative;height:100%;border-radius:6px;min-width:4px;}
-  .pyc{font-family:var(--mono);font-size:11.5px;color:var(--dim);width:54px;text-align:right;flex:none;}
+  .pyc{font-family:var(--mono);font-size:13px;color:var(--dim);width:54px;text-align:right;flex:none;}
 
   /* session history */
   .sess{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden;}
@@ -174,10 +202,10 @@
   .sesssum{flex:1;min-width:0;font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .sessbody{padding:0 14px 14px;border-top:1px solid var(--line);}
   .sessgrp{margin-top:12px;}
-  .sessgl{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;}
+  .sessgl{font-family:var(--mono);font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;}
   .sline{font-size:13px;color:var(--dim);padding:3px 0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;}
   .sline b{color:var(--chalk);font-weight:600;font-family:var(--mono);font-size:12.5px;}
-  .stag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;}
+  .stag{font-size:12.5px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;}
   .snote{font-size:13.5px;color:var(--dim);white-space:pre-wrap;border-left:2px solid var(--line);padding-left:11px;line-height:1.6;margin-top:6px;}
 
   .empty{text-align:center;padding:34px 16px;color:var(--muted);}
@@ -187,7 +215,7 @@
   .reset{background:transparent;border:none;color:var(--muted);font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--mono);transition:.15s;}
   .reset:hover{color:#E5484D;}
   .datarow{display:flex;gap:8px;flex-wrap:wrap;}
-  .dmsg{font-family:var(--mono);font-size:12px;margin-top:11px;line-height:1.5;}
+  .dmsg{font-family:var(--mono);font-size:13.5px;margin-top:11px;line-height:1.5;}
   .dmsg.ok{color:#33C39E;}
   .dmsg.err{color:#E5484D;}
 
@@ -206,18 +234,18 @@
   .picon{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;flex:none;}
   .ptitle{flex:1;min-width:0;}
   .prow{display:flex;align-items:center;gap:9px;flex-wrap:wrap;}
-  .pstep{font-family:var(--mono);font-size:10px;letter-spacing:.14em;font-weight:700;padding:2px 7px;border-radius:6px;}
+  .pstep{font-family:var(--mono);font-size:12px;letter-spacing:.14em;font-weight:700;padding:2px 7px;border-radius:6px;}
   .pname{font-size:18px;font-weight:800;color:var(--chalk);letter-spacing:-.012em;}
-  .ptime{font-family:var(--mono);font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap;}
+  .ptime{font-family:var(--mono);font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:3px 10px;white-space:nowrap;}
   .pdesc{font-size:13px;color:var(--dim);margin-top:8px;line-height:1.62;}
   .pmethods{margin-top:15px;}
   .pmethod{padding:15px 0;border-top:1px solid var(--line);}
   .pmtop{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
   .pmname{font-weight:700;font-size:14.5px;color:var(--chalk);}
-  .pmtime{font-family:var(--mono);font-size:10.5px;color:var(--muted);flex:none;}
+  .pmtime{font-family:var(--mono);font-size:12px;color:var(--muted);flex:none;}
   .pmdesc{margin:0;font-size:13px;color:var(--dim);line-height:1.65;}
   .pmtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:11px;}
-  .pmtag{font-family:var(--mono);font-size:11px;color:var(--muted);background:var(--raise);border-radius:7px;padding:4px 9px;}
+  .pmtag{font-family:var(--mono);font-size:13px;color:var(--muted);background:var(--raise);border-radius:7px;padding:4px 9px;}
 
   .res{display:grid;gap:9px;margin-top:10px;}
   .reslink{display:flex;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:13px;background:var(--panel);text-decoration:none;transition:.15s;}
@@ -225,7 +253,7 @@
   .resmain{flex:1;min-width:0;}
   .resname{font-weight:700;font-size:14.5px;color:var(--chalk);}
   .resdesc{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.58;}
-  .reshost{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:7px;}
+  .reshost{font-family:var(--mono);font-size:12.5px;color:var(--muted);margin-top:7px;}
   .resarrow{color:var(--muted);flex:none;transition:.15s;}
   .reslink:hover .resarrow{color:var(--chalk);}
   @media (min-width:760px){ .res{grid-template-columns:1fr 1fr;} }
@@ -234,7 +262,7 @@
   @media (min-width:860px){ .pillars{flex-direction:row;align-items:flex-start;} .pcard{flex:1;} }
   @media (max-width:460px){
     .stats{grid-template-columns:repeat(2,1fr);}
-    .tab{font-size:11px;gap:3px;padding:9px 2px;}
+    .tab{font-size:13px;gap:3px;padding:9px 2px;}
     .tab svg{width:13px;height:13px;}
   }
   @media (prefers-reduced-motion:reduce){ *{transition:none !important;} }
@@ -297,9 +325,9 @@ function isRest(f){ return !f || !f.trim() || /\brest\b/i.test(f); }
 var DEFAULT_EX_GROUPS=[
   { label:'Strength',  items:['Hangboard','Frenchies'] },
   { label:'Power',     items:['Limit boulders','Campus'] },
-  { label:'Technique', items:['Technique'] },
+  { label:'Technique', items:['Precision','Tension','Commitment'] },
   { label:'Support',   items:['Core','Antagonists','Stretch'] },
-  { label:'Weight',    items:['Bench press','Box Jumping','Dead lift'] }
+  { label:'Weight',    items:['Bench press','Box Jumping','Deadlift'] }
 ];
 
 /* ---------- icons ---------- */
@@ -386,7 +414,8 @@ function savePresets(){ save('crux:expresets', exPresets); }
 
 var tab='climb', curDate=todayStr(), range='month';
 var openTags=null, openSession=null, resetArmed=false, dataMsg=null, planOpen=false;
-var exEdit=false;
+var exEdit=false, addOpen=false;
+var climbMode = (load('crux:climbmode','boulder')==='sport') ? 'sport' : 'boulder';
 /* Set to a date by Save, so the logging pages blank out ready for the next
    entry. Cleared as soon as you move to another date, which reloads that
    day's saved work for correction. */
@@ -556,7 +585,7 @@ function buildHeader(){
 }
 function tabBtn(id,label,icon){
   return h('button',{ class:'tab'+(tab===id?' active':''),
-    onclick:function(){ tab=id; openTags=null; dataMsg=null; resetArmed=false; renderTabs(); renderView(); } },
+    onclick:function(){ tab=id; openTags=null; dataMsg=null; resetArmed=false; exEdit=false; addOpen=false; renderTabs(); renderView(); } },
     ic(icon,16), label);
 }
 function renderTabs(){
@@ -664,66 +693,64 @@ function buildClimb(){
   wrap.appendChild(dateBar());
   wrap.appendChild(draftNote());
 
-  /* --- boulders --- */
-  var card=h('div',{class:'card'});
-  card.appendChild(h('div',{class:'lbl first'},'Boulders'));
-  card.appendChild(h('div',{class:'sub'},'Tap a grade to log a climb. Attempts default to 1 and sent is on.'));
-  var picker=h('div',{class:'grades'});
-  V_GRADES.forEach(function(g){
-    picker.appendChild(h('button',{class:'gpill', style:{color:vColor(g)}, 'aria-label':'Log a V'+g,
-      onclick:function(){
-        editable().boulders.push({ id:newId(), grade:g, attempts:1, sent:true, tags:[] });
+  /* Boulder and sport are separate sub-pages: a normal session is one or the
+     other, so showing both at once was half a screen of dead weight. */
+  var seg=h('div',{class:'seg'});
+  [['boulder','Boulder'],['sport','Sport']].forEach(function(m){
+    seg.appendChild(h('button',{class:'segbtn'+(climbMode===m[0]?' on':''),
+      onclick:function(){ climbMode=m[0]; save('crux:climbmode',climbMode); openTags=null; renderView(); }}, m[1]));
+  });
+  wrap.appendChild(seg);
+
+  if(climbMode==='boulder'){
+    var card=h('div',{class:'card'});
+    card.appendChild(h('div',{class:'lbl first'},'Boulders'));
+    card.appendChild(h('div',{class:'sub'},'Tap a grade to log a climb. Attempts default to 1 and sent is on.'));
+    var picker=h('div',{class:'grades'});
+    V_GRADES.forEach(function(g){
+      picker.appendChild(h('button',{class:'gpill', style:{color:vColor(g)}, 'aria-label':'Log a V'+g,
+        onclick:function(){
+          editable().boulders.push({ id:newId(), grade:g, attempts:1, sent:true, tags:[] });
+          touch(); renderView();
+        }},'V'+g));
+    });
+    card.appendChild(picker);
+    var list=h('div',{style:{marginTop:'12px'}});
+    ((s&&s.boulders)||[]).forEach(function(b){
+      list.appendChild(climbRow(b,'boulder','V'+b.grade, vColor(b.grade)));
+    });
+    if(s&&s.boulders.length) card.appendChild(list);
+    wrap.appendChild(card);
+  } else {
+    var rcard=h('div',{class:'card'});
+    rcard.appendChild(h('div',{class:'lbl first'},'Sport'));
+    rcard.appendChild(h('div',{class:'sub'},'Pick a grade and add it. Attempts default to 1 and sent is on.'));
+    var sel=h('select',{class:'inp', style:{maxWidth:'118px'}, 'aria-label':'Route grade'});
+    SPORT.forEach(function(lbl,i){ sel.appendChild(h('option',{value:String(i), selected:(i===4)}, lbl)); });
+    rcard.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},
+      sel,
+      h('button',{class:'btn ghost sm', onclick:function(){
+        editable().routes.push({ id:newId(), grade:Number(sel.value), attempts:1, sent:true, tags:[] });
         touch(); renderView();
-      }},'V'+g));
-  });
-  card.appendChild(picker);
+      }},'Add route')
+    ));
+    var rlist=h('div',{style:{marginTop:'12px'}});
+    ((s&&s.routes)||[]).forEach(function(r){
+      rlist.appendChild(climbRow(r,'route',SPORT[r.grade], rColor(r.grade)));
+    });
+    if(s&&s.routes.length) rcard.appendChild(rlist);
+    wrap.appendChild(rcard);
+  }
 
-  var list=h('div',{style:{marginTop:'12px'}});
-  ((s&&s.boulders)||[]).forEach(function(b){
-    list.appendChild(climbRow(b,'boulder','V'+b.grade, vColor(b.grade)));
-  });
-  if(s&&s.boulders.length) card.appendChild(list);
-  wrap.appendChild(card);
-
-  /* --- sport routes --- */
-  var rcard=h('div',{class:'card'});
-  rcard.appendChild(h('div',{class:'lbl first'},'Sport routes'));
-  var sel=h('select',{class:'inp', style:{maxWidth:'110px'}, 'aria-label':'Route grade'});
-  SPORT.forEach(function(lbl,i){ sel.appendChild(h('option',{value:String(i), selected:(i===4)}, lbl)); });
-  rcard.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},
-    sel,
-    h('button',{class:'btn ghost sm', onclick:function(){
-      editable().routes.push({ id:newId(), grade:Number(sel.value), attempts:1, sent:true, tags:[] });
-      touch(); renderView();
-    }},'Add route')
-  ));
-  var rlist=h('div',{style:{marginTop:'12px'}});
-  ((s&&s.routes)||[]).forEach(function(r){
-    rlist.appendChild(climbRow(r,'route',SPORT[r.grade], rColor(r.grade)));
-  });
-  if(s&&s.routes.length) rcard.appendChild(rlist);
-  wrap.appendChild(rcard);
-
-  /* --- notes --- */
+  /* One notes field per day, shown on both sub-pages — the diary belongs to
+     the session, not to whichever discipline you happened to open. */
   var ncard=h('div',{class:'card'});
   ncard.appendChild(h('div',{class:'lbl first'},'Session notes'));
   ncard.appendChild(h('textarea',{class:'inp', value:(s&&s.notes)||'',
     placeholder:'How it went — beta, conditions, what failed, how you felt.',
     oninput:function(e){ editable().notes=e.target.value; touch(); refreshSaveBar(); }}));
-  var rpeRow=h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginTop:'12px',flexWrap:'wrap'}});
-  rpeRow.appendChild(h('span',{class:'attlbl'},'EFFORT'));
-  for(var n=1;n<=10;n++){ (function(n){
-    var on=s&&s.rpe===n;
-    var b=h('button',{class:'chip'+(on?' on':''), style:{minWidth:'30px',textAlign:'center'}, onclick:function(){
-      var ses=editable(); ses.rpe = ses.rpe===n ? null : n; touch(); renderView();
-    }}, String(n));
-    if(on) b.style.background=rampColor((n-1)/9), b.style.color='#16130F';
-    rpeRow.appendChild(b);
-  })(n); }
-  ncard.appendChild(rpeRow);
   wrap.appendChild(ncard);
 
-  if(!s) wrap.appendChild(h('p',{class:'hint', style:{textAlign:'center'}},'Nothing logged for this day yet.'));
   wrap.appendChild(saveBar());
   return wrap;
 }
@@ -802,60 +829,67 @@ function buildTrain(){
   wrap.appendChild(dateBar());
   wrap.appendChild(draftNote());
 
-  var card=h('div',{class:'card'});
-  card.appendChild(h('div',{class:'lbl first'},'Exercises'));
-  card.appendChild(h('div',{class:'sub'},'Each set gets its own weight and reps. Last session’s numbers show under the name.'));
-
-  /* Tapping a chip is the only way in. Prefills from the last time this
-     exercise was logged. A one-off is a chip tap plus renaming the row. */
   function addNamed(nm){
     nm=(nm||'').trim(); if(!nm) return;
     var prev=lastTimeFor(nm, curDate);
     var sets = prev ? prev.sets.map(function(st){ return { weight:st.weight, reps:st.reps }; }) : [{weight:null,reps:null}];
     if(!sets.length) sets=[{weight:null,reps:null}];
     editable().exercises.push({ id:newId(), name:nm, sets:sets });
-    touch(); renderView();
+    addOpen=false; touch(); renderView();
   }
 
-  card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'9px'}},
-    h('span',{class:'chipglabel', style:{width:'auto',flex:'1'}}, exEdit?'EDITING PRESETS':'QUICK ADD'),
-    h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit')
-  ));
+  var logged=(s&&s.exercises)||[];
 
-  exPresets.forEach(function(g){
-    var grp=h('div',{class:'chipgroup'});
-    grp.appendChild(h('span',{class:'chipglabel'}, g.label));
-    g.items.forEach(function(nm, ni){
-      if(exEdit){
-        var inp=h('input',{class:'inp presetin', value:nm, maxLength:40, 'aria-label':'Rename '+nm,
-          oninput:function(e){ g.items[ni]=e.target.value; savePresets(); }});
-        grp.appendChild(h('span',{class:'presetwrap'}, inp,
-          h('button',{class:'del','aria-label':'Delete preset '+nm, onclick:function(){
-            g.items.splice(ni,1); savePresets(); renderView();
-          }}, ic('x',14))));
-      } else {
-        grp.appendChild(h('button',{class:'chip add', onclick:function(){ addNamed(nm); }}, nm));
-      }
+  /* What you did comes first; the preset wall is behind a button so it is not
+     a screenful of chips every time you open the page. */
+  if(logged.length){
+    var list=h('div',{});
+    logged.forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
+    wrap.appendChild(list);
+  }
+
+  var open = addOpen || !logged.length;
+  if(!open){
+    wrap.appendChild(h('button',{class:'btn ghost addbtn',
+      onclick:function(){ addOpen=true; renderView(); }}, ic('plus',15),' Add exercise'));
+  } else {
+    var card=h('div',{class:'card'});
+    card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
+      h('span',{class:'lbl first', style:{margin:'0',flex:'1'}}, exEdit?'Editing presets':'Add exercise'),
+      h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit'),
+      (logged.length && !exEdit ? h('button',{class:'del','aria-label':'Close', onclick:function(){ addOpen=false; renderView(); }}, ic('x',18)) : null)
+    ));
+
+    exPresets.forEach(function(g){
+      var grp=h('div',{class:'chipgroup'});
+      grp.appendChild(h('span',{class:'chipglabel'}, g.label));
+      g.items.forEach(function(nm, ni){
+        if(exEdit){
+          var inp=h('input',{class:'inp presetin', value:nm, maxLength:40, 'aria-label':'Rename '+nm,
+            oninput:function(e){ g.items[ni]=e.target.value; savePresets(); }});
+          grp.appendChild(h('span',{class:'presetwrap'}, inp,
+            h('button',{class:'del','aria-label':'Delete preset '+nm, onclick:function(){
+              g.items.splice(ni,1); savePresets(); renderView();
+            }}, ic('x',14))));
+        } else {
+          grp.appendChild(h('button',{class:'chip add', onclick:function(){ addNamed(nm); }}, nm));
+        }
+      });
+      if(exEdit) grp.appendChild(h('button',{class:'chip add', onclick:function(){
+        g.items.push('New exercise'); savePresets(); renderView();
+      }}, ic('plus',12)));
+      card.appendChild(grp);
     });
-    if(exEdit) grp.appendChild(h('button',{class:'chip add', onclick:function(){
-      g.items.push('New exercise'); savePresets(); renderView();
-    }}, ic('plus',12)));
-    card.appendChild(grp);
-  });
 
-  if(exEdit){
-    card.appendChild(h('div',{class:'foot', style:{marginTop:'6px'}},
-      h('button',{class:'reset', onclick:function(){
-        exPresets=cloneOf(DEFAULT_EX_GROUPS); savePresets(); renderView();
-      }}, ic('rotate',13),'Reset presets to default')));
+    if(exEdit){
+      card.appendChild(h('div',{class:'foot', style:{marginTop:'8px'}},
+        h('button',{class:'reset', onclick:function(){
+          exPresets=cloneOf(DEFAULT_EX_GROUPS); savePresets(); renderView();
+        }}, ic('rotate',13),'Reset presets to default')));
+    }
+    wrap.appendChild(card);
   }
 
-  var list=h('div',{style:{marginTop:'12px'}});
-  ((s&&s.exercises)||[]).forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
-  if(s&&s.exercises.length) card.appendChild(list);
-  else card.appendChild(h('p',{class:'hint', style:{marginTop:'14px',marginBottom:'2px'}},'No exercises logged for this day.'));
-
-  wrap.appendChild(card);
   wrap.appendChild(saveBar());
   return wrap;
 }
@@ -879,14 +913,23 @@ function exerciseRow(ex){
   ));
 
   var prev=lastTimeFor(ex.name, curDate);
-  if(prev && fmtSets(prev.sets)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+': '+fmtSets(prev.sets)));
+  if(prev && fmtSets(prev.sets)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+' · '+fmtSets(prev.sets)));
+
+  /* Labelled once at the top instead of repeating placeholders on every row. */
+  row.appendChild(h('div',{class:'sethead'},
+    h('span',{class:'setn'},''),
+    h('span',{}, 'weight'),
+    h('span',{class:'setx'},''),
+    h('span',{}, 'reps'),
+    h('span',{style:{width:'26px',flex:'none'}},'')
+  ));
 
   ex.sets.forEach(function(st, i){
-    var wIn=h('input',{class:'setin', type:'number', inputMode:'decimal', placeholder:'weight',
+    var wIn=h('input',{class:'setin', type:'number', inputMode:'decimal', placeholder:'—',
       value:(st.weight!=null?String(st.weight):''), 'aria-label':'Set '+(i+1)+' weight',
       oninput:function(e){ var x=live(); if(!x||!x.sets[i]) return;
         var v=e.target.value; x.sets[i].weight = v===''?null:Number(v); touch(); refreshSaveBar(); }});
-    var rIn=h('input',{class:'setin', type:'number', inputMode:'numeric', placeholder:'reps',
+    var rIn=h('input',{class:'setin', type:'number', inputMode:'numeric', placeholder:'—',
       value:(st.reps!=null?String(st.reps):''), 'aria-label':'Set '+(i+1)+' reps',
       oninput:function(e){ var x=live(); if(!x||!x.sets[i]) return;
         var v=e.target.value; x.sets[i].reps = v===''?null:Math.round(Number(v)); touch(); refreshSaveBar(); }});
@@ -1153,10 +1196,6 @@ function sessionCard(s){
       ));
     });
     body.appendChild(g3);
-  }
-  if(s.rpe!=null){
-    body.appendChild(h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Effort'),
-      h('div',{class:'sline'}, h('b',{style:{color:rampColor((s.rpe-1)/9)}},'RPE '+s.rpe))));
   }
   if((s.notes||'').trim()){
     body.appendChild(h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Notes'), h('div',{class:'snote'}, s.notes)));
