@@ -97,6 +97,39 @@
   .dmsg.ok{color:#33C39E;}
   .dmsg.err{color:#E5484D;}
 
+  textarea.inp{min-height:92px;resize:vertical;line-height:1.6;font-family:var(--font);display:block;}
+  .snote{font-size:13.5px;color:var(--dim);white-space:pre-wrap;border-left:2px solid var(--line);padding-left:11px;line-height:1.6;}
+  .stag.try{background:transparent;}
+
+  /* project tracker */
+  .proj{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .proj.sent{border-color:#2f5a4c;}
+  .projhead{display:flex;align-items:flex-start;gap:10px;}
+  .projname{font-size:16px;font-weight:700;color:var(--chalk);flex:1;min-width:0;word-break:break-word;}
+  .projgrade{font-family:var(--mono);font-weight:700;font-size:12.5px;padding:3px 9px;border-radius:8px;color:#16130F;flex:none;}
+  .projmeta{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:7px;display:flex;flex-wrap:wrap;gap:4px 12px;}
+  .projmeta .done{color:#33C39E;}
+  .golog{margin-top:12px;border-top:1px solid var(--line);padding-top:6px;}
+  .gorow{display:flex;align-items:baseline;gap:10px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--line);}
+  .gorow:last-child{border-bottom:none;}
+  .godate{font-family:var(--mono);font-size:11.5px;color:var(--muted);width:54px;flex:none;}
+  .gotries{font-family:var(--mono);font-size:12px;color:var(--chalk);flex:none;width:52px;}
+  .gonote{flex:1;min-width:0;color:var(--dim);word-break:break-word;}
+  .goform{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);}
+  .goform .inp{flex:1;min-width:130px;}
+  .projactions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px;}
+
+  /* guide resources */
+  .res{display:flex;flex-direction:column;gap:9px;margin-top:10px;}
+  .reslink{display:block;padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);text-decoration:none;transition:.15s;}
+  .reslink:hover{border-color:#4b463d;}
+  .resname{font-weight:700;font-size:14.5px;color:var(--chalk);}
+  .resdesc{font-size:12.5px;color:var(--dim);margin-top:3px;line-height:1.55;}
+  .reshost{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:6px;}
+  .callout{background:var(--panel);border:1px solid var(--line);border-left:3px solid #E7C13B;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13.5px;color:var(--dim);line-height:1.6;}
+  .callout b{color:var(--chalk);}
+
   .scard{display:flex;flex-direction:column;gap:9px;}
   .shead{display:flex;align-items:center;justify-content:space-between;gap:10px;}
   .sdate{font-family:var(--mono);font-size:13px;color:var(--chalk);font-weight:600;letter-spacing:.02em;}
@@ -120,9 +153,10 @@
 
   .pyrow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
   .pyg{font-family:var(--mono);font-size:12px;font-weight:700;width:30px;flex:none;}
-  .pytrack{flex:1;background:var(--raise);border-radius:6px;height:16px;overflow:hidden;}
-  .pybar{height:100%;border-radius:6px;min-width:4px;}
-  .pyc{font-family:var(--mono);font-size:12px;color:var(--dim);width:22px;text-align:right;flex:none;}
+  .pytrack{position:relative;flex:1;background:var(--raise);border-radius:6px;height:16px;overflow:hidden;}
+  .pyghost{position:absolute;top:0;left:0;height:100%;border-radius:6px;opacity:.24;}
+  .pybar{position:relative;height:100%;border-radius:6px;min-width:4px;}
+  .pyc{font-family:var(--mono);font-size:12px;color:var(--dim);width:52px;text-align:right;flex:none;}
 
   .volrow{display:flex;align-items:flex-end;gap:8px;}
   .volcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
@@ -168,7 +202,12 @@
   .reset:hover{color:#E5484D;}
 
   button:focus-visible,input:focus-visible{outline:2px solid #6aa9e8;outline-offset:2px;}
-  @media (max-width:430px){ .stats{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:430px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    /* five tabs have to fit a 375px phone without wrapping */
+    .tab{font-size:11px;gap:3px;padding:9px 2px;}
+    .tab svg{width:13px;height:13px;}
+  }
   @media (prefers-reduced-motion:reduce){ *{transition:none !important;} }
 </style>
 </head>
@@ -221,21 +260,32 @@ var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var DEFAULT_PLAN={ Mon:'Strength — hangboard + frenchies', Tue:'Rest / mobility', Wed:'Power — limit boulders + campus', Thu:'Rest / antagonists', Fri:'Technique — precision, tension, commitment', Sat:'Projecting — apply it', Sun:'Rest' };
 function isRest(f){ return !f || !f.trim() || /rest/i.test(f); }
 
-/* ---------- the V7+ system (Guide tab) ---------- */
+/* ---------- the V8 system (Guide tab) ---------- */
 var PILLARS=[
-  { name:'Strength', icon:'shield', color:'#33C39E', desc:'Force you can hold — mostly fingers.', time:'1:19–4:35', methods:[
-    { name:'Hangboard', time:'1:40–3:16', desc:'Dead-hangs on an edge to build raw finger strength.', tags:['7s on / 3s off','Half-crimp','Open hand','Slopers','Warm up first','48 h rest'] },
-    { name:'Frenchies', time:'3:17–4:35', desc:'Pull-ups with timed holds to train lock-off strength.', tags:['Hold at varied elbow angles','Scapula + fingers'] }
+  { name:'Finger strength', icon:'shield', color:'#33C39E', desc:'The gatekeeper. Most people stuck below V8 are stuck on fingers, not fitness.', time:'2×/week', methods:[
+    { name:'Weighted max hangs', time:'2×/week', desc:'Half-crimp on a 20mm edge with added weight. The single most reliable driver of grade at this level — and the number worth tracking for two years.', tags:['7–10s hang','3–5 min rest','5–6 sets','Add weight, not time','Fresh fingers only'] },
+    { name:'Repeaters', time:'1×/week', desc:'Strength-endurance: still pulling hard on the fifth go of a project, not just the first.', tags:['7s on / 3s off × 6','2–3 min between sets','Lighter than max hangs'] },
+    { name:'Load management', time:'always', desc:'Two grades is a long campaign. Pulley injuries are what actually end it — not lack of motivation.', tags:['48h between finger sessions','Deload every 4th week','Joint ache ≠ muscle burn — stop'] }
   ]},
-  { name:'Power', icon:'zap', color:'#F0873B', desc:'Generate force fast — for dynamic moves.', time:'4:36–8:30', methods:[
-    { name:'Limit bouldering', time:'5:03–6:10', desc:'Work problems at your absolute ceiling, at full effort.', tags:['1–2 grades above limit','4 quality goes each','Long rests','Max effort'] },
-    { name:'Campus board', time:'6:11–8:30', desc:'Build contact strength — recruiting grip force the instant you hit a hold.', tags:['Matching ladder','Alternating ladder','1-3-5 progression'] }
+  { name:'Power', icon:'zap', color:'#F0873B', desc:'Force delivered fast. V8 moves are rarely static.', time:'1–2×/week', methods:[
+    { name:'Limit bouldering', time:'1–2×/week', desc:'Problems at your absolute ceiling — a few hard moves, full effort, properly rested between goes.', tags:['Fresh, after a full warm-up','3–5 min between goes','Quality over quantity','~45 min, then stop'] },
+    { name:'Campus / contact', time:'1×/week max', desc:'Recruitment — grip force the instant you hit the hold. High injury cost, so earn it before you use it.', tags:['Only after a year at V6+','Ladders, 1-3-5','Low volume','Never when fatigued'] }
   ]},
-  { name:'Advanced technique', icon:'target', color:'#8A7DE0', desc:'Dead-point mastery, three ways.', time:'8:31–10:06', methods:[
-    { name:'Precision', desc:'Land small holds accurately.', tags:['Accuracy over speed'] },
-    { name:'Tension', desc:'Hold body tension through restrictive positions.', tags:['Core + full-body engagement'] },
-    { name:'Commitment', desc:'Fully commit to big crosses and long reaches.', tags:['Confidence under commitment'] }
+  { name:'Projecting skill', icon:'target', color:'#8A7DE0', desc:'At V8 the limiter is often tactics. Strong climbers still waste goes.', time:'every session', methods:[
+    { name:'Work it in sections', desc:'Break the boulder up, solve each piece, then link. Repeating it start-to-finish from the ground burns skin and teaches nothing.', tags:['Isolate the crux','Rehearse exact beta','Link from the low point'] },
+    { name:'Decide before you pull on', desc:'Goes are the scarcest resource you have. Read the sequence from the ground and commit.', tags:['One beta at a time','Change one variable per go'] },
+    { name:'Write down every session', desc:'What failed and why. Patterns across weeks only show up in writing — this is what the diary is for.', tags:['High point','What slipped','How you felt'] }
   ]}
+];
+
+/* External resources — root domains only, all verified reachable. */
+var RESOURCES=[
+  { name:'Lattice Training', url:'https://latticetraining.com', desc:'Testing-led methodology. Strongest material on finger-strength benchmarks and structured plans.' },
+  { name:'Training For Climbing — Eric Hörst', url:'https://trainingforclimbing.com', desc:'Long-running library on periodisation, hangboarding and recovery.' },
+  { name:'Power Company Climbing', url:'https://powercompanyclimbing.com', desc:'Practical coaching writing — especially good on projecting tactics and honest self-assessment.' },
+  { name:'Climb Strong', url:'https://climbstrong.com', desc:'Steve Bechtel on programme design, and why most self-coached plans quietly fail.' },
+  { name:"Hooper's Beta", url:'https://hoopersbeta.com', desc:'Physio-led injury prevention and rehab. Read the finger-pulley material before you need it.' },
+  { name:'The Climbing Doctor', url:'https://theclimbingdoctor.com', desc:'Injury assessment and rehab protocols written for climbers.' }
 ];
 
 /* ---------- icons (inline svg) ---------- */
@@ -286,10 +336,12 @@ function appendKid(el, kid){
 /* ---------- state ---------- */
 var plan = load('crux:plan', null) || Object.assign({}, DEFAULT_PLAN);
 var sessions = load('crux:sessions', []);
+var projects = load('crux:projects', []);
+function saveProjects(){ save('crux:projects', projects); }
 
 /* The draft survives a reload — phones evict backgrounded tabs aggressively,
    and losing a half-logged session mid-gym is the worst possible failure. */
-function emptyDraft(){ return { date: todayStr(), exs: [], sends: {}, rpe: null }; }
+function emptyDraft(){ return { date: todayStr(), exs: [], sends: {}, attempts: {}, notes: '', rpe: null }; }
 function loadDraft(){
   var d = load('crux:draft', null);
   if(!d || typeof d !== 'object') return emptyDraft();
@@ -297,6 +349,8 @@ function loadDraft(){
     date: typeof d.date === 'string' ? d.date : todayStr(),
     exs: Array.isArray(d.exs) ? d.exs : [],
     sends: (d.sends && typeof d.sends === 'object') ? d.sends : {},
+    attempts: (d.attempts && typeof d.attempts === 'object') ? d.attempts : {},
+    notes: typeof d.notes === 'string' ? d.notes : '',
     rpe: (typeof d.rpe === 'number') ? d.rpe : null
   };
 }
@@ -326,6 +380,7 @@ function renderTabs(){
   tabsHost.appendChild(h('div',{class:'tabs'},
     tabBtn('week','Week','calendar'),
     tabBtn('log','Log','list'),
+    tabBtn('project','Project','target'),
     tabBtn('progress','Progress','trend'),
     tabBtn('guide','Guide','book')
   ));
@@ -355,7 +410,10 @@ function buildWeek(){
 }
 
 /* ---------- log view ---------- */
-function canSave(){ return draft.exs.length>0 || Object.keys(draft.sends).length>0 || draft.rpe!=null; }
+function canSave(){
+  return draft.exs.length>0 || Object.keys(draft.sends).length>0 ||
+         Object.keys(draft.attempts).length>0 || (draft.notes||'').trim()!=='' || draft.rpe!=null;
+}
 
 function buildLog(){
   var wrap=h('div',{class:'wrap'});
@@ -385,13 +443,22 @@ function buildLog(){
   var gradeWrap=h('div',{class:'grades'});
   card.appendChild(gradeWrap);
 
+  card.appendChild(h('div',{class:'lbl'},'Attempts — tried hard, did not send'));
+  var attWrap=h('div',{class:'grades'});
+  card.appendChild(attWrap);
+
   card.appendChild(h('div',{class:'lbl'},'How hard did it feel? — RPE'));
   var rpeWrap=h('div',{class:'rpe'});
   card.appendChild(rpeWrap);
 
+  card.appendChild(h('div',{class:'lbl'},'Session diary'));
+  card.appendChild(h('textarea',{ class:'inp', value:draft.notes||'',
+    placeholder:'What worked, what failed, how you felt. Beta, conditions, head game — the stuff the numbers miss.',
+    oninput:function(e){ draft.notes=e.target.value; saveDraft(); } }));
+
   var saveRow=h('div',{style:{marginTop:'16px',display:'flex',gap:'10px',alignItems:'center',flexWrap:'wrap'}});
   var saveBtn=h('button',{class:'btn primary', onclick:saveSession},'Save session');
-  var saveHint=h('span',{class:'hint', style:{margin:'0'}},'Add an exercise, a send, or an RPE to save.');
+  var saveHint=h('span',{class:'hint', style:{margin:'0'}},'Add an exercise, a send, an attempt, a note or an RPE to save.');
   saveRow.appendChild(saveBtn); saveRow.appendChild(saveHint);
   card.appendChild(saveRow);
 
@@ -414,16 +481,23 @@ function buildLog(){
       exWrap.appendChild(h('div',{class:'exrow'}, nameInp, stepper, del, detail));
     });
   }
-  function renderGrades(){
-    gradeWrap.innerHTML='';
+  /* One renderer for both grids. Sends fill with the grade colour; attempts
+     stay outlined, so a glance separates "done" from "worked on". */
+  function renderGradeGrid(host, key){
+    host.innerHTML='';
     GRADES.forEach(function(g){
-      var c=draft.sends[g]||0;
-      var pill=h('button',{class:'gpill'+(c?' on':''), onclick:function(){ draft.sends[g]=(draft.sends[g]||0)+1; renderGrades(); updateSave(); }},'V'+g);
-      if(c){ pill.style.background=gradeColor(g);
+      var c=draft[key][g]||0;
+      var label=(key==='sends'?'send':'attempt');
+      var pill=h('button',{ class:'gpill'+(c?' on':''), 'aria-label':'Add a V'+g+' '+label,
+        onclick:function(){ draft[key][g]=(draft[key][g]||0)+1; renderGradeGrid(host,key); updateSave(); } },'V'+g);
+      if(c){
+        if(key==='sends'){ pill.style.background=gradeColor(g); }
+        else { pill.style.color=gradeColor(g); pill.style.borderColor=gradeColor(g); }
         pill.appendChild(h('span',{class:'gcount'}, String(c)));
-        pill.appendChild(h('span',{class:'gminus', onclick:function(ev){ ev.stopPropagation(); var v=(draft.sends[g]||0)-1; if(v<=0) delete draft.sends[g]; else draft.sends[g]=v; renderGrades(); updateSave(); }}, ic('minus',11)));
+        pill.appendChild(h('span',{class:'gminus', role:'button', 'aria-label':'Remove a V'+g+' '+label,
+          onclick:function(ev){ ev.stopPropagation(); var v=(draft[key][g]||0)-1; if(v<=0) delete draft[key][g]; else draft[key][g]=v; renderGradeGrid(host,key); updateSave(); }}, ic('minus',11)));
       }
-      gradeWrap.appendChild(pill);
+      host.appendChild(pill);
     });
   }
   function renderRpe(){
@@ -460,6 +534,15 @@ function buildLog(){
         });
         kids.push(tags);
       }
+      var attKeys=Object.keys(s.attempts||{});
+      if(attKeys.length){
+        var atags=h('div',{class:'ssends'});
+        atags.appendChild(h('span',{class:'stag try', style:{color:'#7E766B',borderColor:'transparent',padding:'3px 0'}},'tried'));
+        attKeys.map(Number).sort(function(a,b){return a-b;}).forEach(function(g){
+          atags.appendChild(h('span',{class:'stag try', style:{color:gradeColor(g), borderColor:gradeColor(g), opacity:'.75'}}, 'V'+g+' ×'+s.attempts[g]));
+        });
+        kids.push(atags);
+      }
       (s.exercises||[]).forEach(function(e){
         var line=h('div',{class:'sex'});
         line.appendChild(h('b',{}, e.name||'Exercise'));
@@ -467,29 +550,151 @@ function buildLog(){
         if(e.detail) line.appendChild(h('span',{class:'sd'}, ' · '+e.detail));
         kids.push(line);
       });
+      if(s.notes) kids.push(h('div',{class:'snote'}, s.notes));
       var card=h('div',{class:'card scard'});
       kids.forEach(function(k){ if(k) card.appendChild(k); });
       historyWrap.appendChild(card);
     });
   }
   function saveSession(){
+    if(!canSave()) return;
     var cleanExs=draft.exs.map(function(e){ return {name:(e.name||'').trim(), sets:Number(e.sets)||0, detail:(e.detail||'').trim()}; })
       .filter(function(e){ return e.name||e.detail||e.sets; });
-    if(cleanExs.length===0 && Object.keys(draft.sends).length===0 && draft.rpe==null) return;
-    var session={ id:Date.now()+'-'+Math.random().toString(36).slice(2,7), date:draft.date, exercises:cleanExs, sends:Object.assign({},draft.sends), rpe:draft.rpe };
+    var session={ id:newId(), date:draft.date, exercises:cleanExs,
+      sends:Object.assign({},draft.sends), attempts:Object.assign({},draft.attempts),
+      notes:(draft.notes||'').trim(), rpe:draft.rpe };
     sessions.unshift(session); save('crux:sessions',sessions);
     clearDraft();
     renderView();
   }
 
-  renderExercises(); renderGrades(); renderRpe(); updateSave(); renderHistory();
+  renderExercises();
+  renderGradeGrid(gradeWrap,'sends');
+  renderGradeGrid(attWrap,'attempts');
+  renderRpe(); updateSave(); renderHistory();
+  return wrap;
+}
+
+/* ---------- project view ---------- */
+var projArmed = null;
+
+function projStats(p){
+  var log=p.log||[];
+  var tries=log.reduce(function(a,g){ return a+(Number(g.tries)||0); },0);
+  var days={}; log.forEach(function(g){ days[g.date]=true; });
+  var dates=log.map(function(g){ return g.date; }).sort();
+  return { tries:tries, days:Object.keys(days).length, first:dates[0]||null, last:dates[dates.length-1]||null };
+}
+
+function buildProjectView(){
+  var wrap=h('div',{class:'wrap'});
+  wrap.appendChild(h('p',{class:'hint'},'Breaking a grade is usually one boulder over many sessions. Track the goes, not just the send.'));
+
+  var addCard=h('div',{class:'card'});
+  addCard.appendChild(h('div',{class:'lbl first'},'New project'));
+  var nameIn=h('input',{class:'inp', placeholder:'Name it — e.g. Left arête, sit start'});
+  var whereIn=h('input',{class:'inp', style:{marginTop:'8px'}, placeholder:'Where — gym, board or crag'});
+  var gradeSel=h('select',{class:'inp', style:{marginTop:'8px', maxWidth:'110px'}});
+  GRADES.forEach(function(g){ gradeSel.appendChild(h('option',{value:String(g), selected:(g===8)},'V'+g)); });
+  var addBtn=h('button',{class:'btn primary sm', onclick:function(){
+    var nm=nameIn.value.trim();
+    if(!nm){ nameIn.focus(); return; }
+    projects.unshift({ id:newId(), name:nm, grade:Number(gradeSel.value), where:whereIn.value.trim(),
+      created:todayStr(), sent:null, log:[] });
+    saveProjects(); renderView();
+  }},'Add project');
+  addCard.appendChild(nameIn); addCard.appendChild(whereIn);
+  addCard.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center',marginTop:'8px',flexWrap:'wrap'}}, gradeSel, addBtn));
+  wrap.appendChild(addCard);
+
+  if(projects.length===0){
+    wrap.appendChild(h('div',{class:'empty'}, ic('target',26),
+      h('p',{},'No projects yet. Add the boulder you are actually trying to send.')));
+    return wrap;
+  }
+
+  var order=projects.slice().sort(function(a,b){
+    if(!!a.sent !== !!b.sent) return a.sent ? 1 : -1;   // open projects first
+    return (b.created||'') > (a.created||'') ? 1 : -1;
+  });
+
+  order.forEach(function(p){
+    var st=projStats(p);
+    var pc=h('div',{class:'proj'+(p.sent?' sent':'')});
+
+    pc.appendChild(h('div',{class:'projhead'},
+      h('span',{class:'projname'}, p.name),
+      h('span',{class:'projgrade', style:{background:gradeColor(p.grade)}}, 'V'+p.grade)
+    ));
+
+    var meta=h('div',{class:'projmeta'});
+    meta.appendChild(h('span',{}, st.tries+(st.tries===1?' go':' goes')));
+    meta.appendChild(h('span',{}, st.days+(st.days===1?' session':' sessions')));
+    if(p.where) meta.appendChild(h('span',{}, p.where));
+    if(st.last) meta.appendChild(h('span',{}, 'last '+fmtShort(st.last)));
+    if(p.sent) meta.appendChild(h('span',{class:'done'}, '✓ sent '+fmtShort(p.sent)));
+    pc.appendChild(meta);
+
+    if((p.log||[]).length){
+      var golog=h('div',{class:'golog'});
+      p.log.slice().sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; }).forEach(function(g){
+        golog.appendChild(h('div',{class:'gorow'},
+          h('span',{class:'godate'}, fmtShort(g.date)),
+          h('span',{class:'gotries'}, '×'+(g.tries||0)),
+          h('span',{class:'gonote'}, g.note||'—'),
+          h('button',{class:'del', 'aria-label':'Delete this go', onclick:function(){
+            p.log=p.log.filter(function(x){ return x.id!==g.id; }); saveProjects(); renderView();
+          }}, ic('x',14))
+        ));
+      });
+      pc.appendChild(golog);
+    }
+
+    if(!p.sent){
+      var dIn=h('input',{type:'date', class:'inp', value:todayStr(), style:{maxWidth:'150px',flex:'none'}});
+      var tries=1;
+      var tVal=h('span',{class:'val'},'1');
+      var stepper=h('div',{class:'stepper', style:{flex:'none'}},
+        h('button',{'aria-label':'One fewer go', onclick:function(){ tries=Math.max(1,tries-1); tVal.textContent=tries; }}, ic('minus',14)),
+        tVal,
+        h('button',{'aria-label':'One more go', onclick:function(){ tries=tries+1; tVal.textContent=tries; }}, ic('plus',14))
+      );
+      var nIn=h('input',{class:'inp', placeholder:'high point / what failed'});
+      var logBtn=h('button',{class:'btn ghost sm', onclick:function(){
+        p.log=p.log||[];
+        p.log.push({ id:newId(), date:dIn.value||todayStr(), tries:tries, note:nIn.value.trim() });
+        saveProjects(); renderView();
+      }},'Log a go');
+      pc.appendChild(h('div',{class:'goform'}, dIn, stepper, nIn, logBtn));
+    }
+
+    var actions=h('div',{class:'projactions'});
+    actions.appendChild(h('button',{class:'btn ghost sm', onclick:function(){
+      p.sent = p.sent ? null : todayStr(); saveProjects(); renderView();
+    }}, p.sent ? 'Reopen' : 'Mark sent'));
+    actions.appendChild(h('button',{class:'reset', style:{marginLeft:'auto'}, onclick:function(){
+      if(projArmed!==p.id){ projArmed=p.id; renderView(); setTimeout(function(){ projArmed=null; },4000); return; }
+      projects=projects.filter(function(x){ return x.id!==p.id; });
+      projArmed=null; saveProjects(); renderView();
+    }}, ic('trash',13), projArmed===p.id ? 'Tap again to delete' : 'Delete'));
+    pc.appendChild(actions);
+
+    wrap.appendChild(pc);
+  });
+
   return wrap;
 }
 
 /* ---------- guide view ---------- */
 function buildGuide(){
   var wrap=h('div',{class:'wrap wide'});
-  wrap.appendChild(h('p',{class:'hint'},'The V7+ system from your video — three pillars, in order of priority.'));
+  wrap.appendChild(h('p',{class:'hint'},'Getting to V8 — three pillars, in order of priority.'));
+  wrap.appendChild(h('div',{class:'callout'},
+    h('b',{},'A note on the timeline. '),
+    'V6+ to V8 is two grades. For most people that is seasons, not weeks — so the thing that decides it is ',
+    h('b',{},'consistency and staying uninjured'),
+    ', not any single session. Expect long flat stretches where nothing seems to move. That is normal, and it is exactly why the diary and the project log are worth keeping.'
+  ));
 
   var pillars=h('div',{class:'pillars'});
   PILLARS.forEach(function(p, idx){
@@ -524,6 +729,17 @@ function buildGuide(){
     pillars.appendChild(card);
   });
   wrap.appendChild(pillars);
+
+  wrap.appendChild(h('div',{class:'lbl'},'Resources'));
+  var res=h('div',{class:'res'});
+  RESOURCES.forEach(function(r){
+    res.appendChild(h('a',{class:'reslink', href:r.url, target:'_blank', rel:'noopener noreferrer'},
+      h('div',{class:'resname'}, r.name),
+      h('div',{class:'resdesc'}, r.desc),
+      h('div',{class:'reshost'}, r.url.replace(/^https?:\/\//,''))
+    ));
+  });
+  wrap.appendChild(res);
   return wrap;
 }
 
@@ -532,6 +748,7 @@ function buildProgress(){
   var wrap=h('div',{class:'wrap'});
 
   var totals={}; sessions.forEach(function(s){ var sk=s.sends||{}; for(var g in sk){ if(sk.hasOwnProperty(g)) totals[g]=(totals[g]||0)+sk[g]; } });
+  var attTotals={}; sessions.forEach(function(s){ var ak=s.attempts||{}; for(var g in ak){ if(ak.hasOwnProperty(g)) attTotals[g]=(attTotals[g]||0)+ak[g]; } });
   var hardest=null; for(var g0 in totals){ if(totals.hasOwnProperty(g0)){ var ng=+g0; if(hardest==null||ng>hardest) hardest=ng; } }
   var rpeVals=sessions.filter(function(s){return s.rpe!=null;});
   var avgRpe = rpeVals.length ? (rpeVals.reduce(function(a,s){return a+s.rpe;},0)/rpeVals.length) : null;
@@ -554,16 +771,24 @@ function buildProgress(){
 
   var pyr=h('div',{class:'chart'});
   pyr.appendChild(h('div',{class:'ctitle'},'Send pyramid'));
-  pyr.appendChild(h('div',{class:'csub'},'total problems by grade'));
-  var pyGrades=Object.keys(totals).map(Number).sort(function(a,b){return b-a;});
-  if(pyGrades.length===0){ pyr.appendChild(h('div',{class:'cnote'},'No sends logged yet.')); }
+  pyr.appendChild(h('div',{class:'csub'},'sends by grade — faded bar is attempts'));
+  var pyGrades={};
+  Object.keys(totals).forEach(function(g){ pyGrades[g]=true; });
+  Object.keys(attTotals).forEach(function(g){ pyGrades[g]=true; });
+  var pyList=Object.keys(pyGrades).map(Number).sort(function(a,b){return b-a;});
+  if(pyList.length===0){ pyr.appendChild(h('div',{class:'cnote'},'No sends or attempts logged yet.')); }
   else {
-    var maxC=1; pyGrades.forEach(function(g){ if(totals[g]>maxC) maxC=totals[g]; });
-    pyGrades.forEach(function(g){
+    var maxC=1;
+    pyList.forEach(function(g){ maxC=Math.max(maxC, totals[g]||0, attTotals[g]||0); });
+    pyList.forEach(function(g){
+      var sc=totals[g]||0, ac=attTotals[g]||0;
       pyr.appendChild(h('div',{class:'pyrow'},
         h('span',{class:'pyg', style:{color:gradeColor(g)}},'V'+g),
-        h('div',{class:'pytrack'}, h('div',{class:'pybar', style:{width:(totals[g]/maxC*100)+'%', background:gradeColor(g)}})),
-        h('span',{class:'pyc'}, String(totals[g]))
+        h('div',{class:'pytrack'},
+          (ac ? h('div',{class:'pyghost', style:{width:(ac/maxC*100)+'%', background:gradeColor(g)}}) : null),
+          (sc ? h('div',{class:'pybar', style:{width:(sc/maxC*100)+'%', background:gradeColor(g)}}) : null)
+        ),
+        h('span',{class:'pyc'}, sc + (ac ? ' / '+ac : ''))
       ));
     });
   }
@@ -612,7 +837,7 @@ function buildProgress(){
 function newId(){ return Date.now()+'-'+Math.random().toString(36).slice(2,7); }
 
 function exportData(){
-  var payload={ app:'crux', schema:1, exported:new Date().toISOString(), plan:plan, sessions:sessions };
+  var payload={ app:'crux', schema:2, exported:new Date().toISOString(), plan:plan, sessions:sessions, projects:projects };
   var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
   var a=h('a',{href:url, download:'crux-backup-'+todayStr()+'.json'});
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -625,13 +850,17 @@ function exportData(){
 function normalizeSession(s){
   if(!s || typeof s!=='object') return null;
   if(typeof s.date!=='string' || !/^\d{4}-\d{2}-\d{2}$/.test(s.date)) return null;
-  var sends={};
-  if(s.sends && typeof s.sends==='object'){
-    Object.keys(s.sends).forEach(function(k){
-      var g=Number(k), c=Math.round(Number(s.sends[k]));
-      if(isFinite(g) && g>=0 && g<=20 && isFinite(c) && c>0) sends[g]=c;
-    });
+  function gradeMap(src){
+    var out={};
+    if(src && typeof src==='object'){
+      Object.keys(src).forEach(function(k){
+        var g=Number(k), c=Math.round(Number(src[k]));
+        if(isFinite(g) && g>=0 && g<=20 && isFinite(c) && c>0) out[g]=c;
+      });
+    }
+    return out;
   }
+  var sends=gradeMap(s.sends), attempts=gradeMap(s.attempts);
   var exercises=Array.isArray(s.exercises) ? s.exercises.map(function(e){
     if(!e || typeof e!=='object') return null;
     return { name:String(e.name||'').slice(0,120), sets:Math.max(0,Math.round(Number(e.sets))||0), detail:String(e.detail||'').slice(0,400) };
@@ -642,7 +871,31 @@ function normalizeSession(s){
     date: s.date,
     exercises: exercises,
     sends: sends,
+    attempts: attempts,
+    notes: String(s.notes||'').slice(0,5000),
     rpe: (isFinite(rpe) && rpe>=1 && rpe<=10) ? Math.round(rpe) : null
+  };
+}
+
+function normalizeProject(p){
+  if(!p || typeof p!=='object') return null;
+  var nm=String(p.name||'').trim().slice(0,160);
+  if(!nm) return null;
+  var isDate=function(d){ return typeof d==='string' && /^\d{4}-\d{2}-\d{2}$/.test(d); };
+  var g=Math.round(Number(p.grade));
+  var log=Array.isArray(p.log) ? p.log.map(function(e){
+    if(!e || typeof e!=='object' || !isDate(e.date)) return null;
+    return { id:(typeof e.id==='string' && e.id) ? e.id : newId(), date:e.date,
+             tries:Math.max(0,Math.round(Number(e.tries))||0), note:String(e.note||'').slice(0,600) };
+  }).filter(Boolean) : [];
+  return {
+    id: (typeof p.id==='string' && p.id) ? p.id : newId(),
+    name: nm,
+    grade: (isFinite(g) && g>=0 && g<=20) ? g : 8,
+    where: String(p.where||'').slice(0,160),
+    created: isDate(p.created) ? p.created : todayStr(),
+    sent: isDate(p.sent) ? p.sent : null,
+    log: log
   };
 }
 
@@ -665,12 +918,26 @@ function importData(file){
       seen[s.id]=true; sessions.push(s); added++;
     });
     save('crux:sessions',sessions);
+
+    var projAdded=0;
+    if(Array.isArray(data.projects)){
+      var pSeen={}; projects.forEach(function(p){ pSeen[p.id]=true; });
+      data.projects.forEach(function(raw){
+        var p=normalizeProject(raw);
+        if(!p || pSeen[p.id]) return;
+        pSeen[p.id]=true; projects.push(p); projAdded++;
+      });
+      saveProjects();
+    }
+
     var planNote='';
     if(data.plan && typeof data.plan==='object'){
       DAYS.forEach(function(d){ if(typeof data.plan[d]==='string') plan[d]=data.plan[d]; });
       save('crux:plan',plan); planNote=' Plan restored.';
     }
-    dataMsg={ text:'Merged '+added+' session'+(added===1?'':'s')+(skipped?', skipped '+skipped+' already-present or invalid':'')+'.'+planNote, ok:true };
+    dataMsg={ text:'Merged '+added+' session'+(added===1?'':'s')+
+      (projAdded?' and '+projAdded+' project'+(projAdded===1?'':'s'):'')+
+      (skipped?', skipped '+skipped+' already-present or invalid':'')+'.'+planNote, ok:true };
     renderView();
   };
   reader.readAsText(file);
@@ -680,7 +947,7 @@ function buildDataCard(){
   var card=h('div',{class:'card'});
   card.appendChild(h('div',{class:'lbl first'},'Data'));
   card.appendChild(h('p',{class:'cnote', style:{marginBottom:'12px'}},
-    'Your log lives only on this device. Export a backup before clearing browser data or switching phones.'));
+    'Your log, diary and projects live only on this device. Export a backup before clearing browser data or switching phones.'));
 
   var picker=h('input',{ type:'file', accept:'application/json,.json', style:{display:'none'},
     onchange:function(e){ var f=e.target.files && e.target.files[0]; if(f) importData(f); e.target.value=''; } });
@@ -696,8 +963,8 @@ function buildDataCard(){
   card.appendChild(h('div',{class:'foot'},
     h('button',{class:'reset', onclick:function(){
       if(!resetArmed){ resetArmed=true; dataMsg=null; renderView(); setTimeout(function(){ resetArmed=false; },4000); return; }
-      sessions=[]; plan=Object.assign({},DEFAULT_PLAN); clearDraft();
-      save('crux:sessions',sessions); save('crux:plan',plan);
+      sessions=[]; projects=[]; plan=Object.assign({},DEFAULT_PLAN); clearDraft();
+      save('crux:sessions',sessions); saveProjects(); save('crux:plan',plan);
       resetArmed=false; dataMsg={ text:'All data erased.', ok:false }; renderView();
     }}, ic('trash',13), resetArmed?'Tap again to erase everything':'Reset all data')
   ));
@@ -707,7 +974,12 @@ function buildDataCard(){
 /* ---------- render ---------- */
 function renderView(){
   viewHost.innerHTML='';
-  viewHost.appendChild( tab==='week' ? buildWeek() : tab==='log' ? buildLog() : tab==='guide' ? buildGuide() : buildProgress() );
+  viewHost.appendChild(
+    tab==='week' ? buildWeek() :
+    tab==='log' ? buildLog() :
+    tab==='project' ? buildProjectView() :
+    tab==='guide' ? buildGuide() : buildProgress()
+  );
 }
 function mount(){
   var app=document.getElementById('app'); app.innerHTML=''; app.className='app';
