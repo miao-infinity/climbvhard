@@ -15,7 +15,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..700;1,400&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22%2316130F%22/%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22212%22%20r%3D%2262%22%20fill%3D%22%23B0784B%22/%3E%3Ccircle%20cx%3D%22362%22%20cy%3D%22212%22%20r%3D%2262%22%20fill%3D%22%23B0784B%22/%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22212%22%20r%3D%2231%22%20fill%3D%22%23EAD4B0%22/%3E%3Ccircle%20cx%3D%22362%22%20cy%3D%22212%22%20r%3D%2231%22%20fill%3D%22%23EAD4B0%22/%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22258%22%20rx%3D%22146%22%20ry%3D%22138%22%20fill%3D%22%23B0784B%22/%3E%3Cellipse%20cx%3D%22210%22%20cy%3D%22232%22%20rx%3D%2254%22%20ry%3D%2250%22%20fill%3D%22%23EAD4B0%22/%3E%3Cellipse%20cx%3D%22302%22%20cy%3D%22232%22%20rx%3D%2254%22%20ry%3D%2250%22%20fill%3D%22%23EAD4B0%22/%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22312%22%20rx%3D%22118%22%20ry%3D%2296%22%20fill%3D%22%23EAD4B0%22/%3E%3Ccircle%20cx%3D%22212%22%20cy%3D%22240%22%20r%3D%2217%22%20fill%3D%22%232A1E15%22/%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22240%22%20r%3D%2217%22%20fill%3D%22%232A1E15%22/%3E%3Ccircle%20cx%3D%22218%22%20cy%3D%22234%22%20r%3D%225%22%20fill%3D%22%23F1EDE6%22/%3E%3Ccircle%20cx%3D%22306%22%20cy%3D%22234%22%20r%3D%225%22%20fill%3D%22%23F1EDE6%22/%3E%3Cellipse%20cx%3D%22240%22%20cy%3D%22320%22%20rx%3D%227%22%20ry%3D%2210%22%20fill%3D%22%232A1E15%22/%3E%3Cellipse%20cx%3D%22272%22%20cy%3D%22320%22%20rx%3D%227%22%20ry%3D%2210%22%20fill%3D%22%232A1E15%22/%3E%3Cpath%20d%3D%22M213.404%20329.826%20A52%2052%200%200%200%20298.596%20329.826%22%20fill%3D%22none%22%20stroke%3D%22%232A1E15%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22%2316130F%22/%3E%3Cpath%20d%3D%22M84%20384%20L196%20214%20L262%20288%20L344%20158%20L432%20384%22%20fill%3D%22none%22%20stroke%3D%22%23F1EDE6%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
 <style>
   :root{
     --panel:#201C17; --raise:#2A251F; --line:#332D26;
@@ -169,8 +169,10 @@
   /* exercise quick-add */
   .chipgroup{display:flex;flex-wrap:wrap;align-items:center;gap:5px 15px;margin-bottom:7px;}
   .chipglabel{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--muted);width:62px;flex:none;}
-  .chip.add{border-style:solid;color:var(--dim);}
-  .chip.add:hover{color:var(--chalk);}
+  /* Add-panel chips are actions (tap to add), so they read as quiet pills —
+     distinct from the borderless text toggles used for styles. */
+  .chip.add{border:1px solid var(--line);border-radius:999px;padding:7px 13px;color:var(--dim);}
+  .chip.add:hover{color:var(--chalk);border-color:#4b463d;}
   .presetwrap{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:1px 3px 1px 10px;background:var(--raise);}
   .presetin{background:transparent;border:none;padding:4px 0;font-size:16px;font-weight:600;width:100px;min-width:0;}
   .presetin:focus{border:none;}
@@ -185,6 +187,11 @@
     font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
   .sethead>span:nth-child(2),.sethead>span:nth-child(4){flex:1;text-align:center;min-width:0;}
   .addbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:14px;font-size:15px;}
+  /* endurance entry: 2×2 of labelled metric fields */
+  .endugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;}
+  .endufield{display:flex;flex-direction:column;gap:5px;}
+  .endulabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .endufield .setin{text-align:left;}
   .setrow{display:flex;align-items:center;gap:7px;margin-top:7px;}
   .setn{font-family:var(--mono);font-size:11px;color:var(--muted);width:16px;flex:none;}
   .setin{background:#16130F;border:1px solid var(--line);border-radius:8px;color:var(--chalk);font-family:var(--mono);font-size:16px;padding:7px 8px;outline:none;width:100%;min-width:0;text-align:center;}
@@ -528,7 +535,15 @@ migrate();
 var drafts = load('crux:drafts', null) || {};
 function persistDrafts(){ save('crux:drafts', drafts); }
 function cloneOf(o){ return JSON.parse(JSON.stringify(o)); }
-function blankSession(date){ return { id:newId(), date:date, notes:'', rpe:null, boulders:[], routes:[], exercises:[] }; }
+function blankSession(date){ return { id:newId(), date:date, notes:'', rpe:null, boulders:[], routes:[], exercises:[], endurance:[] }; }
+/* Older saved sessions predate endurance; default the arrays so edit handlers
+   can push without guarding every call site. */
+function withArrays(s){
+  if(!s) return s;
+  if(!s.boulders) s.boulders=[]; if(!s.routes) s.routes=[];
+  if(!s.exercises) s.exercises=[]; if(!s.endurance) s.endurance=[];
+  return s;
+}
 
 function findSession(date){
   for(var i=0;i<sessions.length;i++) if(sessions[i].date===date) return sessions[i];
@@ -552,7 +567,7 @@ function editable(){
       var fresh=blankSession(curDate); fresh.append=true; drafts[curDate]=fresh;
     } else {
       var s=findSession(curDate);
-      drafts[curDate] = s ? cloneOf(s) : blankSession(curDate);
+      drafts[curDate] = s ? withArrays(cloneOf(s)) : blankSession(curDate);
     }
   }
   return drafts[curDate];
@@ -560,12 +575,13 @@ function editable(){
 function touch(){ persistDrafts(); }
 
 function isEmptySession(s){
-  return !(s.boulders||[]).length && !(s.routes||[]).length && !(s.exercises||[]).length && !(s.notes||'').trim();
+  return !(s.boulders||[]).length && !(s.routes||[]).length && !(s.exercises||[]).length
+    && !(s.endurance||[]).length && !(s.notes||'').trim();
 }
 function sessionShape(s){
-  if(!s) return JSON.stringify({notes:'',rpe:null,boulders:[],routes:[],exercises:[]});
+  if(!s) return JSON.stringify({notes:'',rpe:null,boulders:[],routes:[],exercises:[],endurance:[]});
   return JSON.stringify({ notes:(s.notes||''), rpe:(s.rpe==null?null:s.rpe),
-    boulders:(s.boulders||[]), routes:(s.routes||[]), exercises:(s.exercises||[]) });
+    boulders:(s.boulders||[]), routes:(s.routes||[]), exercises:(s.exercises||[]), endurance:(s.endurance||[]) });
 }
 function isDirty(date){
   var dr=drafts[date];
@@ -581,10 +597,11 @@ function saveDraftSession(){
   if(dr.append && at>=0){
     /* Second save on a day that is already recorded: add to it, never replace,
        so the earlier entries survive. */
-    cur=sessions[at];
+    cur=withArrays(sessions[at]);
     cur.boulders=cur.boulders.concat(cloneOf(dr.boulders));
     cur.routes=cur.routes.concat(cloneOf(dr.routes));
     cur.exercises=cur.exercises.concat(cloneOf(dr.exercises));
+    cur.endurance=cur.endurance.concat(cloneOf(dr.endurance||[]));
     if((dr.notes||'').trim()) cur.notes = (cur.notes||'').trim() ? cur.notes+'\n\n'+dr.notes : dr.notes;
     if(dr.rpe!=null) cur.rpe=dr.rpe;
   } else {
@@ -636,10 +653,10 @@ function sessionsAsc(){
 }
 
 /* ---------- header + tabs ---------- */
-var MONKEY='<svg viewBox="0 0 512 512" width="34" height="34" aria-label="Cookie" role="img"><circle cx="150" cy="212" r="62" fill="#B0784B"/><circle cx="362" cy="212" r="62" fill="#B0784B"/><circle cx="150" cy="212" r="31" fill="#EAD4B0"/><circle cx="362" cy="212" r="31" fill="#EAD4B0"/><ellipse cx="256" cy="258" rx="146" ry="138" fill="#B0784B"/><ellipse cx="210" cy="232" rx="54" ry="50" fill="#EAD4B0"/><ellipse cx="302" cy="232" rx="54" ry="50" fill="#EAD4B0"/><ellipse cx="256" cy="312" rx="118" ry="96" fill="#EAD4B0"/><circle cx="212" cy="240" r="17" fill="#2A1E15"/><circle cx="300" cy="240" r="17" fill="#2A1E15"/><circle cx="218" cy="234" r="5" fill="#F1EDE6"/><circle cx="306" cy="234" r="5" fill="#F1EDE6"/><ellipse cx="240" cy="320" rx="7" ry="10" fill="#2A1E15"/><ellipse cx="272" cy="320" rx="7" ry="10" fill="#2A1E15"/><path d="M213.404 329.826 A52 52 0 0 0 298.596 329.826" fill="none" stroke="#2A1E15" stroke-width="14" stroke-linecap="round"/></svg>';
+var PEAK='<svg viewBox="0 0 512 512" width="30" height="30" aria-label="Cookie" role="img"><path d="M84 384 L196 214 L262 288 L344 158 L432 384" fill="none" stroke="#F1EDE6" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 function buildHeader(){
   return h('div',{class:'top'},
-    h('span',{class:'mark', html:MONKEY})
+    h('span',{class:'mark', html:PEAK})
   );
 }
 function tabBtn(id,label,icon){
@@ -915,6 +932,42 @@ function fmtSets(sets){
     .map(function(st){ return (st.weight!=null?st.weight:'–')+'×'+(st.reps!=null?st.reps:'–'); }).join(', ');
 }
 
+/* Endurance — hikes, rucks, cardio. Elevation gain is the headline metric for
+   high-altitude prep, so it leads. */
+var ENDURANCE_TYPES=['Hike','Ruck','Incline','Stairs','Run'];
+var ENDU_FIELDS=[
+  { key:'elevation', label:'Elev', unit:'m',   max:30000, int:true },
+  { key:'minutes',   label:'Time', unit:'min', max:10000, int:true },
+  { key:'distance',  label:'Dist', unit:'km',  max:1000,  int:false },
+  { key:'pack',      label:'Pack', unit:'kg',  max:200,   int:false }
+];
+function lastEnduranceFor(name, beforeDate){
+  var best=null;
+  sessions.forEach(function(s){
+    if(s.date>=beforeDate) return;
+    (s.endurance||[]).forEach(function(e){
+      if((e.name||'').toLowerCase()!==(name||'').toLowerCase()) return;
+      if(!best || s.date>best.date) best={ date:s.date,
+        elevation:e.elevation, minutes:e.minutes, distance:e.distance, pack:e.pack };
+    });
+  });
+  return best;
+}
+function fmtDuration(min){
+  min=Math.round(min);
+  if(min<60) return min+' min';
+  var h=Math.floor(min/60), m=min%60;
+  return h+'h'+(m?' '+m+'m':'');
+}
+function fmtEndurance(e){
+  var out=[];
+  if(e.elevation!=null) out.push(e.elevation+' m');
+  if(e.minutes!=null) out.push(e.minutes+' min');
+  if(e.distance!=null) out.push(e.distance+' km');
+  if(e.pack!=null) out.push(e.pack+' kg');
+  return out.join(' · ');
+}
+
 function buildTrain(){
   var wrap=h('div',{class:'wrap'});
   var s=viewOf(curDate);
@@ -930,14 +983,23 @@ function buildTrain(){
     editable().exercises.push({ id:newId(), name:nm, sets:sets });
     addOpen=false; touch(); renderView();
   }
+  function addEndurance(nm){
+    nm=(nm||'').trim(); if(!nm) return;
+    var prev=lastEnduranceFor(nm, curDate);
+    editable().endurance.push({ id:newId(), name:nm,
+      elevation: prev?prev.elevation:null, minutes: prev?prev.minutes:null,
+      distance: prev?prev.distance:null, pack: prev?prev.pack:null });
+    addOpen=false; touch(); renderView();
+  }
 
-  var logged=(s&&s.exercises)||[];
+  var loggedEx=(s&&s.exercises)||[], loggedEn=(s&&s.endurance)||[];
 
   /* What you did comes first; the preset wall is behind a button so it is not
      a screenful of chips every time you open the page. */
-  if(logged.length){
+  if(loggedEx.length || loggedEn.length){
     var list=h('div',{});
-    logged.forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
+    loggedEn.forEach(function(en){ list.appendChild(enduranceRow(en)); });
+    loggedEx.forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
     wrap.appendChild(list);
   }
 
@@ -945,11 +1007,11 @@ function buildTrain(){
      the Add button, not a wall of chips. */
   if(!addOpen){
     wrap.appendChild(h('button',{class:'btn ghost addbtn',
-      onclick:function(){ addOpen=true; renderView(); }}, ic('plus',15),' Add exercise'));
+      onclick:function(){ addOpen=true; renderView(); }}, ic('plus',15),' Add'));
   } else {
     var card=h('div',{class:'card'});
     card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
-      h('span',{class:'lbl first', style:{margin:'0',flex:'1'}}, exEdit?'Editing presets':'Add exercise'),
+      h('span',{class:'lbl first', style:{margin:'0',flex:'1'}}, exEdit?'Editing presets':'Add'),
       h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit'),
       (exEdit ? null : h('button',{class:'del','aria-label':'Close', onclick:function(){ addOpen=false; renderView(); }}, ic('x',18)))
     ));
@@ -974,6 +1036,15 @@ function buildTrain(){
       }}, ic('plus',12)));
       card.appendChild(grp);
     });
+
+    if(!exEdit){
+      var eg=h('div',{class:'chipgroup'});
+      eg.appendChild(h('span',{class:'chipglabel'},'Endurance'));
+      ENDURANCE_TYPES.forEach(function(nm){
+        eg.appendChild(h('button',{class:'chip add', onclick:function(){ addEndurance(nm); }}, nm));
+      });
+      card.appendChild(eg);
+    }
 
     if(exEdit){
       card.appendChild(h('div',{class:'foot', style:{marginTop:'8px'}},
@@ -1049,6 +1120,39 @@ function exerciseRow(ex){
   return row;
 }
 
+function enduranceRow(en){
+  function live(){
+    var d=editable(), i;
+    for(i=0;i<d.endurance.length;i++) if(d.endurance[i].id===en.id) return d.endurance[i];
+    return null;
+  }
+  var row=h('div',{class:'ex'});
+  row.appendChild(h('div',{class:'extop'},
+    h('input',{class:'exname', value:en.name, placeholder:'Session',
+      oninput:function(e){ var x=live(); if(!x) return; x.name=e.target.value; touch(); refreshSaveBar(); }}),
+    h('button',{class:'del','aria-label':'Remove session', onclick:function(){
+      var d=editable(), i;
+      for(i=0;i<d.endurance.length;i++) if(d.endurance[i].id===en.id){ d.endurance.splice(i,1); break; }
+      touch(); renderView();
+    }}, ic('x',16))
+  ));
+
+  var prev=lastEnduranceFor(en.name, curDate);
+  if(prev && fmtEndurance(prev)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+' · '+fmtEndurance(prev)));
+
+  var grid=h('div',{class:'endugrid'});
+  ENDU_FIELDS.forEach(function(f){
+    var inp=h('input',{class:'setin', type:'number', inputMode:f.int?'numeric':'decimal', placeholder:'—',
+      value:(en[f.key]!=null?String(en[f.key]):''), 'aria-label':f.label+' in '+f.unit,
+      oninput:function(e){ var x=live(); if(!x) return;
+        var v=e.target.value; x[f.key] = v===''?null:(f.int?Math.round(Number(v)):Number(v)); touch(); refreshSaveBar(); }});
+    grid.appendChild(h('label',{class:'endufield'},
+      h('span',{class:'endulabel'}, f.label+' · '+f.unit), inp));
+  });
+  row.appendChild(grid);
+  return row;
+}
+
 /* ---------- analysis ---------- */
 function rangeStart(r){
   var t=todayStr();
@@ -1080,6 +1184,7 @@ function buildAnalysis(){
 
   /* aggregate */
   var bSent=0,bTries=0,rSent=0,rTries=0,hardB=null,hardR=null,volume=0,setCount=0;
+  var enElev=0,enDist=0,enMin=0,enCount=0,enLongest=0;
   var bySendGrade={}, byTryGrade={}, byRouteGrade={};
   scope.forEach(function(s){
     (s.boulders||[]).forEach(function(b){
@@ -1093,6 +1198,12 @@ function buildAnalysis(){
     });
     (s.exercises||[]).forEach(function(e){
       (e.sets||[]).forEach(function(st){ if(st.weight!=null&&st.reps!=null){ volume+=st.weight*st.reps; setCount++; } });
+    });
+    (s.endurance||[]).forEach(function(e){
+      enCount++;
+      if(e.elevation!=null){ enElev+=e.elevation; if(e.elevation>enLongest) enLongest=e.elevation; }
+      if(e.distance!=null) enDist+=e.distance;
+      if(e.minutes!=null) enMin+=e.minutes;
     });
   });
   var sendRate = bTries ? Math.round(bSent/bTries*100) : null;
@@ -1119,12 +1230,12 @@ function buildAnalysis(){
   var bk=bucketsFor(range==='all'?'year':range);
   var hist=h('div',{class:'chart'});
   hist.appendChild(h('div',{class:'ctitle'},'Activity'));
-  hist.appendChild(h('div',{class:'csub'}, range==='week'?'climbs + sets per day':range==='month'?'per week':'per month'));
+  hist.appendChild(h('div',{class:'csub'}, 'climbs, sets and sessions, '+(range==='week'?'per day':range==='month'?'per week':'per month')));
   var counts=bk.map(function(b){
     var c=0;
     sessions.forEach(function(s){
       if(s.date<b.start||s.date>b.end) return;
-      c+=(s.boulders||[]).length+(s.routes||[]).length;
+      c+=(s.boulders||[]).length+(s.routes||[]).length+(s.endurance||[]).length;
       (s.exercises||[]).forEach(function(e){ c+=(e.sets||[]).length; });
     });
     return c;
@@ -1191,12 +1302,46 @@ function buildAnalysis(){
     var tmx=tagCount[tlist[0]];
     tlist.forEach(function(t){
       tc.appendChild(h('div',{class:'pyrow'},
-        h('span',{class:'pyg', style:{width:'62px',color:'var(--dim)',fontSize:'12px'}}, t),
+        h('span',{class:'pyg', style:{width:'62px',color:'var(--dim)',fontSize:'13px'}}, t),
         h('div',{class:'pytrack'}, h('div',{class:'pybar', style:{width:(tagCount[t]/tmx*100)+'%', background:'#8A7DE0'}})),
         h('span',{class:'pyc'}, String(tagCount[t]))
       ));
     });
     wrap.appendChild(tc);
+  }
+
+  /* endurance */
+  if(enCount){
+    var esec=h('div',{class:'chart'});
+    esec.appendChild(h('div',{class:'ctitle'},'Endurance'));
+    esec.appendChild(h('div',{class:'csub'}, enCount+(enCount===1?' session':' sessions')+' in this range'));
+    function eRow(label, val){ return h('div',{class:'sline', style:{justifyContent:'space-between'}},
+      h('span',{style:{color:'var(--dim)'}}, label), h('b',{}, val)); }
+    esec.appendChild(eRow('Elevation gain', enElev ? enElev.toLocaleString()+' m' : '—'));
+    esec.appendChild(eRow('Distance', enDist ? (Math.round(enDist*10)/10)+' km' : '—'));
+    esec.appendChild(eRow('Time on feet', enMin ? fmtDuration(enMin) : '—'));
+    esec.appendChild(eRow('Biggest climb', enLongest ? enLongest.toLocaleString()+' m' : '—'));
+
+    /* elevation gain per bucket */
+    var eb=bk.map(function(b){
+      var g=0;
+      sessions.forEach(function(s){ if(s.date<b.start||s.date>b.end) return;
+        (s.endurance||[]).forEach(function(e){ if(e.elevation!=null) g+=e.elevation; }); });
+      return g;
+    });
+    if(Math.max.apply(null,eb)>0){
+      esec.appendChild(h('div',{class:'csub', style:{margin:'14px 2px 10px'}},'elevation gain, '+(range==='week'?'per day':range==='month'?'per week':'per month')));
+      var emax=Math.max(1, Math.max.apply(null,eb));
+      var erow=h('div',{class:'volrow'});
+      bk.forEach(function(b,i){
+        erow.appendChild(h('div',{class:'volcol'},
+          h('div',{class:'voltrack'}, h('div',{class:'volbar', style:{height:(eb[i]/emax*100)+'%'}},
+            eb[i]?h('span',{class:'voln'}, eb[i]>=1000?(Math.round(eb[i]/100)/10)+'k':String(eb[i])):null)),
+          h('span',{class:'vollab'}, b.label)));
+      });
+      esec.appendChild(erow);
+    }
+    wrap.appendChild(esec);
   }
 
   /* exercise bests */
@@ -1241,6 +1386,7 @@ function sessionCard(s){
   var bits=[];
   if((s.boulders||[]).length) bits.push(s.boulders.length+' boulder'+(s.boulders.length===1?'':'s'));
   if((s.routes||[]).length) bits.push(s.routes.length+' route'+(s.routes.length===1?'':'s'));
+  if((s.endurance||[]).length) bits.push(s.endurance.length+(s.endurance.length===1?' session':' sessions'));
   if((s.exercises||[]).length) bits.push(s.exercises.length+' exercise'+(s.exercises.length===1?'':'s'));
   if((s.notes||'').trim()) bits.push('notes');
 
@@ -1279,6 +1425,16 @@ function sessionCard(s){
       ));
     });
     body.appendChild(g2);
+  }
+  if((s.endurance||[]).length){
+    var ge=h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Endurance'));
+    s.endurance.forEach(function(e){
+      ge.appendChild(h('div',{class:'sline'},
+        h('span',{style:{color:'var(--chalk)'}}, e.name||'Session'),
+        h('b',{}, fmtEndurance(e)||'—')
+      ));
+    });
+    body.appendChild(ge);
   }
   if((s.exercises||[]).length){
     var g3=h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Training'));
@@ -1490,11 +1646,18 @@ function normalizeSession(s){
     if(!sets.length) sets=[{weight:null,reps:null}];
     return { id:(typeof e.id==='string'&&e.id)?e.id:newId(), name:String(e.name||'').slice(0,120), sets:sets.slice(0,40) };
   }).filter(Boolean) : [];
+  var num=function(v,max){ var n=Number(v); return (v!=null&&isFinite(n)&&n>=0&&n<=max)?n:null; };
+  var endurance=Array.isArray(s.endurance) ? s.endurance.map(function(e){
+    if(!e || typeof e!=='object') return null;
+    return { id:(typeof e.id==='string'&&e.id)?e.id:newId(), name:String(e.name||'').slice(0,120),
+      elevation:num(e.elevation,30000), minutes:num(e.minutes,10000),
+      distance:num(e.distance,1000), pack:num(e.pack,200) };
+  }).filter(Boolean).slice(0,40) : [];
   var rpe=Number(s.rpe);
   return { id:(typeof s.id==='string'&&s.id)?s.id:newId(), date:s.date,
     notes:String(s.notes||'').slice(0,8000),
     rpe:(isFinite(rpe)&&rpe>=1&&rpe<=10)?Math.round(rpe):null,
-    boulders:boulders, routes:routes, exercises:exercises };
+    boulders:boulders, routes:routes, exercises:exercises, endurance:endurance };
 }
 
 function importData(file){
