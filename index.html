@@ -3,19 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>CRUX — Climbing &amp; Training Log</title>
+<title>Cookie — Climbing &amp; Training Log</title>
 <meta name="description" content="A minimal climbing and fitness log: boulders, routes, lifts, and progress over time.">
 <meta name="theme-color" content="#16130F">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="CRUX">
+<meta name="apple-mobile-web-app-title" content="Cookie">
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..700;1,400&display=swap">
-<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20512%20512'%3E%3Crect%20width='512'%20height='512'%20rx='96'%20fill='%2316130F'/%3E%3Cpath%20d='M156%20156L356%20356M356%20156L156%20356'%20stroke='%23E5484D'%20stroke-width='58'%20stroke-linecap='round'%20fill='none'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22%2316130F%22/%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22212%22%20r%3D%2262%22%20fill%3D%22%23B0784B%22/%3E%3Ccircle%20cx%3D%22362%22%20cy%3D%22212%22%20r%3D%2262%22%20fill%3D%22%23B0784B%22/%3E%3Ccircle%20cx%3D%22150%22%20cy%3D%22212%22%20r%3D%2231%22%20fill%3D%22%23EAD4B0%22/%3E%3Ccircle%20cx%3D%22362%22%20cy%3D%22212%22%20r%3D%2231%22%20fill%3D%22%23EAD4B0%22/%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22258%22%20rx%3D%22146%22%20ry%3D%22138%22%20fill%3D%22%23B0784B%22/%3E%3Cellipse%20cx%3D%22210%22%20cy%3D%22232%22%20rx%3D%2254%22%20ry%3D%2250%22%20fill%3D%22%23EAD4B0%22/%3E%3Cellipse%20cx%3D%22302%22%20cy%3D%22232%22%20rx%3D%2254%22%20ry%3D%2250%22%20fill%3D%22%23EAD4B0%22/%3E%3Cellipse%20cx%3D%22256%22%20cy%3D%22312%22%20rx%3D%22118%22%20ry%3D%2296%22%20fill%3D%22%23EAD4B0%22/%3E%3Ccircle%20cx%3D%22212%22%20cy%3D%22240%22%20r%3D%2217%22%20fill%3D%22%232A1E15%22/%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22240%22%20r%3D%2217%22%20fill%3D%22%232A1E15%22/%3E%3Ccircle%20cx%3D%22218%22%20cy%3D%22234%22%20r%3D%225%22%20fill%3D%22%23F1EDE6%22/%3E%3Ccircle%20cx%3D%22306%22%20cy%3D%22234%22%20r%3D%225%22%20fill%3D%22%23F1EDE6%22/%3E%3Cellipse%20cx%3D%22240%22%20cy%3D%22320%22%20rx%3D%227%22%20ry%3D%2210%22%20fill%3D%22%232A1E15%22/%3E%3Cellipse%20cx%3D%22272%22%20cy%3D%22320%22%20rx%3D%227%22%20ry%3D%2210%22%20fill%3D%22%232A1E15%22/%3E%3Cpath%20d%3D%22M213.404%20329.826%20A52%2052%200%200%200%20298.596%20329.826%22%20fill%3D%22none%22%20stroke%3D%22%232A1E15%22%20stroke-width%3D%2214%22%20stroke-linecap%3D%22round%22/%3E%3C/svg%3E">
 <style>
   :root{
     --panel:#201C17; --raise:#2A251F; --line:#332D26;
@@ -51,10 +51,7 @@
   /* Nav is fixed to the bottom for thumb reach, so content clears it. */
   .app{padding-bottom:calc(78px + env(safe-area-inset-bottom));}
   .top{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 18px 0;max-width:760px;margin:0 auto;}
-  .brand{display:flex;align-items:baseline;gap:11px;}
-  .logo{font-weight:800;font-size:20px;letter-spacing:.16em;}
-  .logo .x{color:#E5484D;}
-  .tag{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.16em;}
+  .mark{display:inline-flex;line-height:0;}
 
   .tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:30;
     display:flex;gap:2px;width:100%;max-width:520px;
@@ -639,12 +636,10 @@ function sessionsAsc(){
 }
 
 /* ---------- header + tabs ---------- */
+var MONKEY='<svg viewBox="0 0 512 512" width="34" height="34" aria-label="Cookie" role="img"><circle cx="150" cy="212" r="62" fill="#B0784B"/><circle cx="362" cy="212" r="62" fill="#B0784B"/><circle cx="150" cy="212" r="31" fill="#EAD4B0"/><circle cx="362" cy="212" r="31" fill="#EAD4B0"/><ellipse cx="256" cy="258" rx="146" ry="138" fill="#B0784B"/><ellipse cx="210" cy="232" rx="54" ry="50" fill="#EAD4B0"/><ellipse cx="302" cy="232" rx="54" ry="50" fill="#EAD4B0"/><ellipse cx="256" cy="312" rx="118" ry="96" fill="#EAD4B0"/><circle cx="212" cy="240" r="17" fill="#2A1E15"/><circle cx="300" cy="240" r="17" fill="#2A1E15"/><circle cx="218" cy="234" r="5" fill="#F1EDE6"/><circle cx="306" cy="234" r="5" fill="#F1EDE6"/><ellipse cx="240" cy="320" rx="7" ry="10" fill="#2A1E15"/><ellipse cx="272" cy="320" rx="7" ry="10" fill="#2A1E15"/><path d="M213.404 329.826 A52 52 0 0 0 298.596 329.826" fill="none" stroke="#2A1E15" stroke-width="14" stroke-linecap="round"/></svg>';
 function buildHeader(){
   return h('div',{class:'top'},
-    h('div',{class:'brand'},
-      h('span',{class:'logo'},'CRU', h('span',{class:'x'},'X')),
-      h('span',{class:'tag'},'climb + train')
-    )
+    h('span',{class:'mark', html:MONKEY})
   );
 }
 function tabBtn(id,label,icon){
@@ -1510,7 +1505,7 @@ function importData(file){
     try{ data=JSON.parse(reader.result); }
     catch(e){ dataMsg={ text:'That file is not valid JSON.', ok:false }; renderView(); return; }
     if(!data || typeof data!=='object' || !Array.isArray(data.sessions)){
-      dataMsg={ text:"That doesn't look like a CRUX backup.", ok:false }; renderView(); return;
+      dataMsg={ text:"That doesn't look like a Cookie backup.", ok:false }; renderView(); return;
     }
     var seen={}; sessions.forEach(function(s){ seen[s.id]=true; });
     var byDate={}; sessions.forEach(function(s){ byDate[s.date]=s; });
