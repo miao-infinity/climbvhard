@@ -192,6 +192,7 @@
   .endufield{display:flex;flex-direction:column;gap:5px;}
   .endulabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
   .endufield .setin{text-align:left;}
+  .endupace{margin-top:10px;font-size:13px;color:#33C39E;font-variant-numeric:tabular-nums;}
   .setrow{display:flex;align-items:center;gap:7px;margin-top:7px;}
   .setn{font-family:var(--mono);font-size:11px;color:var(--muted);width:16px;flex:none;}
   .setin{background:#16130F;border:1px solid var(--line);border-radius:8px;color:var(--chalk);font-family:var(--mono);font-size:16px;padding:7px 8px;outline:none;width:100%;min-width:0;text-align:center;}
@@ -882,15 +883,23 @@ function fmtSets(sets){
     .map(function(st){ return (st.weight!=null?st.weight:'–')+'×'+(st.reps!=null?st.reps:'–'); }).join(', ');
 }
 
-/* Endurance — hikes, rucks, cardio. Elevation gain is the headline metric for
-   high-altitude prep, so it leads. */
-var ENDURANCE_TYPES=['Hike','Ruck','Incline','Stairs','Run'];
+/* Endurance — runs mostly, some hikes. Distance and time lead (they drive
+   pace, the metric that matters for running); elevation and pack trail for
+   the hike/ruck days. */
+var ENDURANCE_TYPES=['Run','Hike','Ruck','Incline','Stairs'];
 var ENDU_FIELDS=[
-  { key:'elevation', label:'Elev', unit:'m',   max:30000, int:true },
-  { key:'minutes',   label:'Time', unit:'min', max:10000, int:true },
   { key:'distance',  label:'Dist', unit:'km',  max:1000,  int:false },
+  { key:'minutes',   label:'Time', unit:'min', max:10000, int:true },
+  { key:'elevation', label:'Elev', unit:'m',   max:30000, int:true },
   { key:'pack',      label:'Pack', unit:'kg',  max:200,   int:false }
 ];
+/* Pace in min/km, formatted M:SS. */
+function fmtPace(min, km){
+  if(min==null || km==null || min<=0 || km<=0) return null;
+  var p=min/km, m=Math.floor(p), s=Math.round((p-m)*60);
+  if(s===60){ m++; s=0; }
+  return m+':'+(s<10?'0':'')+s+' /km';
+}
 function lastEnduranceFor(name, beforeDate){
   var best=null;
   sessions.forEach(function(s){
@@ -911,9 +920,11 @@ function fmtDuration(min){
 }
 function fmtEndurance(e){
   var out=[];
-  if(e.elevation!=null) out.push(e.elevation+' m');
-  if(e.minutes!=null) out.push(e.minutes+' min');
   if(e.distance!=null) out.push(e.distance+' km');
+  if(e.minutes!=null) out.push(e.minutes+' min');
+  var pace=fmtPace(e.minutes, e.distance);
+  if(pace) out.push(pace);
+  if(e.elevation!=null) out.push(e.elevation+' m');
   if(e.pack!=null) out.push(e.pack+' kg');
   return out.join(' · ');
 }
@@ -1090,16 +1101,26 @@ function enduranceRow(en){
   var prev=lastEnduranceFor(en.name, curDate);
   if(prev && fmtEndurance(prev)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+' · '+fmtEndurance(prev)));
 
+  /* Pace is the number a runner watches — computed live from distance + time
+     without re-rendering (which would blur the field being typed). */
+  var paceEl=h('div',{class:'endupace'});
+  function refreshPace(){
+    var x=live(), p=x?fmtPace(x.minutes, x.distance):null;
+    paceEl.textContent = p ? 'Pace '+p : '';
+    paceEl.style.display = p ? '' : 'none';
+  }
   var grid=h('div',{class:'endugrid'});
   ENDU_FIELDS.forEach(function(f){
     var inp=h('input',{class:'setin', type:'number', inputMode:f.int?'numeric':'decimal', placeholder:'—',
       value:(en[f.key]!=null?String(en[f.key]):''), 'aria-label':f.label+' in '+f.unit,
       oninput:function(e){ var x=live(); if(!x) return;
-        var v=e.target.value; x[f.key] = v===''?null:(f.int?Math.round(Number(v)):Number(v)); touch(); refreshSaveBar(); }});
+        var v=e.target.value; x[f.key] = v===''?null:(f.int?Math.round(Number(v)):Number(v)); touch(); refreshSaveBar(); refreshPace(); }});
     grid.appendChild(h('label',{class:'endufield'},
       h('span',{class:'endulabel'}, f.label+' · '+f.unit), inp));
   });
   row.appendChild(grid);
+  refreshPace();
+  row.appendChild(paceEl);
   return row;
 }
 
@@ -1134,7 +1155,7 @@ function buildAnalysis(){
 
   /* aggregate */
   var bSent=0,bTries=0,rSent=0,rTries=0,hardB=null,hardR=null,volume=0,setCount=0;
-  var enElev=0,enDist=0,enMin=0,enCount=0,enLongest=0;
+  var enElev=0,enDist=0,enMin=0,enCount=0;
   var bySendGrade={}, byTryGrade={}, byRouteGrade={};
   scope.forEach(function(s){
     (s.boulders||[]).forEach(function(b){
@@ -1151,7 +1172,7 @@ function buildAnalysis(){
     });
     (s.endurance||[]).forEach(function(e){
       enCount++;
-      if(e.elevation!=null){ enElev+=e.elevation; if(e.elevation>enLongest) enLongest=e.elevation; }
+      if(e.elevation!=null) enElev+=e.elevation;
       if(e.distance!=null) enDist+=e.distance;
       if(e.minutes!=null) enMin+=e.minutes;
     });
@@ -1267,26 +1288,27 @@ function buildAnalysis(){
     esec.appendChild(h('div',{class:'csub'}, enCount+(enCount===1?' session':' sessions')+' in this range'));
     function eRow(label, val){ return h('div',{class:'sline', style:{justifyContent:'space-between'}},
       h('span',{style:{color:'var(--dim)'}}, label), h('b',{}, val)); }
-    esec.appendChild(eRow('Elevation gain', enElev ? enElev.toLocaleString()+' m' : '—'));
     esec.appendChild(eRow('Distance', enDist ? (Math.round(enDist*10)/10)+' km' : '—'));
+    esec.appendChild(eRow('Avg pace', fmtPace(enMin, enDist) || '—'));
     esec.appendChild(eRow('Time on feet', enMin ? fmtDuration(enMin) : '—'));
-    esec.appendChild(eRow('Biggest climb', enLongest ? enLongest.toLocaleString()+' m' : '—'));
+    esec.appendChild(eRow('Elevation gain', enElev ? enElev.toLocaleString()+' m' : '—'));
 
-    /* elevation gain per bucket */
+    /* distance per bucket — weekly mileage */
     var eb=bk.map(function(b){
       var g=0;
       sessions.forEach(function(s){ if(s.date<b.start||s.date>b.end) return;
-        (s.endurance||[]).forEach(function(e){ if(e.elevation!=null) g+=e.elevation; }); });
+        (s.endurance||[]).forEach(function(e){ if(e.distance!=null) g+=e.distance; }); });
       return g;
     });
     if(Math.max.apply(null,eb)>0){
-      esec.appendChild(h('div',{class:'csub', style:{margin:'14px 2px 10px'}},'elevation gain, '+(range==='week'?'per day':range==='month'?'per week':'per month')));
+      esec.appendChild(h('div',{class:'csub', style:{margin:'14px 2px 10px'}},'distance, '+(range==='week'?'per day':range==='month'?'per week':'per month')));
       var emax=Math.max(1, Math.max.apply(null,eb));
       var erow=h('div',{class:'volrow'});
       bk.forEach(function(b,i){
+        var km=Math.round(eb[i]*10)/10;
         erow.appendChild(h('div',{class:'volcol'},
           h('div',{class:'voltrack'}, h('div',{class:'volbar', style:{height:(eb[i]/emax*100)+'%'}},
-            eb[i]?h('span',{class:'voln'}, eb[i]>=1000?(Math.round(eb[i]/100)/10)+'k':String(eb[i])):null)),
+            eb[i]?h('span',{class:'voln'}, String(km)):null)),
           h('span',{class:'vollab'}, b.label)));
       });
       esec.appendChild(erow);
