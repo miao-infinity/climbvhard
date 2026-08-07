@@ -1,5 +1,5 @@
 /* CRUX — offline service worker */
-var CACHE = 'cookie-v2';
+var CACHE = 'cookie-v3';
 var ASSETS = [
   './',
   './index.html',
