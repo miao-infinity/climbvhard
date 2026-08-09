@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cookie — Climbing &amp; Training Log</title>
+<meta name="description" content="A minimal climbing and fitness log: boulders, routes, lifts, and progress over time.">
+<meta name="theme-color" content="#16130F">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cookie">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="./icon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,300..700;1,400&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%20512%20512%22%3E%3Crect%20x%3D%220%22%20y%3D%220%22%20width%3D%22512%22%20height%3D%22512%22%20rx%3D%22112%22%20fill%3D%22%2316130F%22/%3E%3Cpath%20d%3D%22M84%20384%20L196%20214%20L262%20288%20L344%20158%20L432%20384%22%20fill%3D%22none%22%20stroke%3D%22%23F1EDE6%22%20stroke-width%3D%2230%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E">
+<style>
+  :root{
+    --panel:#201C17; --raise:#2A251F; --line:#332D26;
+    --chalk:#F1EDE6; --dim:#B7B0A5; --muted:#7E766B;
+    /* Sans for everything you glance at — grades, weights, reps, dates,
+       stats, nav. SF on iPhone, which has excellent tabular figures.
+       Serif only where you actually read: the diary and the guide. */
+    --font:ui-sans-serif,system-ui,-apple-system,'SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --mono:ui-sans-serif,system-ui,-apple-system,'SF Pro Text','Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+    --serif:'Crimson Pro',ui-serif,Georgia,'Times New Roman',serif;
+  }
+  /* Type scale — six steps, nothing in between. Half-pixel differences read
+     as noise rather than hierarchy, so every rule uses one of these:
+       11  uppercase micro-labels, chart meta
+       13  secondary text, chips, small buttons, table rows
+       15  body, buttons, key data, prose
+       17  section headings, the notes field
+       20  logo, stat numbers
+       24  page title
+     Plus one exception: form fields sit at 16px and must never go below it.
+     iOS Safari zooms the page when a focused field is under 16px and does
+     not zoom back — that is what threw the layout off mid-session.
+     Check with: grep -oE 'font-size:[0-9.]+px' index.html | sort -u        */
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;min-height:100%;}
+  body{
+    font-family:var(--font); color:var(--chalk);
+    background:#16130F; background:radial-gradient(120% 80% at 50% -8%, #221D15 0%, #16130F 58%) fixed;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    /* Tabular figures so numbers stay column-aligned as they change. */
+    font-size:15px; font-variant-numeric:tabular-nums lining-nums;
+  }
+  /* Nav is fixed to the bottom for thumb reach, so content clears it. */
+  .app{padding-bottom:calc(78px + env(safe-area-inset-bottom));}
+  .top{display:flex;align-items:center;justify-content:space-between;padding:calc(18px + env(safe-area-inset-top)) 18px 0;max-width:760px;margin:0 auto;}
+  .mark{display:inline-flex;line-height:0;}
+
+  .tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);z-index:30;
+    display:flex;gap:2px;width:100%;max-width:520px;
+    background:rgba(26,22,18,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);padding:7px 8px calc(7px + env(safe-area-inset-bottom));}
+  .tab{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    padding:6px 2px;border:none;background:transparent;color:var(--muted);font-family:var(--font);
+    font-weight:600;font-size:11px;white-space:nowrap;border-radius:10px;cursor:pointer;transition:.15s;}
+  .tab:hover{color:var(--dim);}
+  .tab.active{color:var(--chalk);}
+  .tab.active svg{color:#E5484D;}
+  .tab svg{display:block;flex:none;}
+
+  .wrap{padding:16px 14px 48px;max-width:760px;margin:0 auto;}
+  .wrap.wide{max-width:1060px;}
+  .hint{font-size:13px;color:var(--muted);margin:2px 2px 14px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;}
+  .lbl{font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;font-size:11px;color:var(--muted);margin:18px 0 9px;font-weight:600;}
+  .lbl.first{margin-top:0;}
+  .sub{font-size:13px;color:var(--muted);margin:-4px 0 10px;}
+
+  /* iOS Safari zooms the whole page when a focused field is under 16px and
+     never zooms back — which is what made the layout look wrong mid-log.
+     Every focusable field stays at 16px for that reason. */
+  input,textarea,select{font-size:16px;}
+  /* Nothing falls back to the UA's 13.33px; class rules still win. */
+  button{font-size:13px;}
+  .inp{background:var(--raise);border:1px solid var(--line);border-radius:9px;color:var(--chalk);font-family:var(--font);font-size:16px;padding:9px 10px;outline:none;width:100%;transition:.15s;}
+  .inp:focus{border-color:#4b463d;}
+  .inp::placeholder{color:var(--muted);}
+  input[type=date].inp{font-family:var(--mono);color-scheme:dark;max-width:180px;}
+  select.inp{color-scheme:dark;}
+  /* The diary is prose — read, not scanned. */
+  textarea.inp{min-height:96px;resize:vertical;display:block;
+    font-family:var(--serif);font-size:17px;line-height:1.6;}
+
+  .btn{border:none;border-radius:11px;padding:11px 16px;font-family:var(--font);font-weight:700;font-size:15px;cursor:pointer;letter-spacing:.02em;transition:.15s;}
+  .btn.primary{background:var(--chalk);color:#16130F;}
+  .btn.primary:hover{background:#fff;}
+  .btn.primary:disabled{opacity:.38;cursor:not-allowed;}
+  .btn.ghost{background:var(--raise);color:var(--chalk);border:1px solid var(--line);font-weight:600;}
+  .btn.ghost:hover{border-color:#4b463d;}
+  .btn.sm{padding:8px 12px;font-size:13px;border-radius:9px;}
+  .del{background:transparent;border:none;color:var(--muted);cursor:pointer;display:grid;place-items:center;padding:4px;transition:.12s;flex:none;}
+  .del:hover{color:#E5484D;}
+
+  .stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:9px;overflow:hidden;background:var(--raise);flex:none;}
+  .stepper button{width:30px;height:32px;border:none;background:transparent;color:var(--dim);cursor:pointer;display:grid;place-items:center;transition:.12s;}
+  .stepper button:hover{color:var(--chalk);background:#332D26;}
+  .stepper .val{min-width:28px;text-align:center;font-family:var(--mono);font-size:15px;color:var(--chalk);}
+
+  /* grade pickers */
+  .grades{display:flex;flex-wrap:wrap;gap:8px;}
+  .gpill{position:relative;min-width:46px;height:38px;border-radius:10px;border:1px solid var(--line);background:var(--raise);color:var(--dim);font-family:var(--mono);font-weight:600;font-size:15px;cursor:pointer;display:grid;place-items:center;transition:.12s;padding:0 8px;}
+  .gpill:hover{border-color:#5a544a;color:var(--chalk);}
+
+  /* logged climb rows */
+  .climb{border:1px solid var(--line);border-radius:12px;padding:10px 11px;margin-bottom:8px;background:var(--raise);}
+  .climbtop{display:flex;align-items:center;gap:9px;}
+  .climbctl{display:flex;align-items:center;gap:9px;margin-top:9px;}
+  .cg{font-family:var(--mono);font-weight:700;font-size:13px;padding:5px 9px;border-radius:8px;color:#16130F;flex:none;min-width:44px;text-align:center;}
+  /* A filled capsule read as a sticker stuck on the row. Now it is just the
+     word, with a check that only appears once the climb is sent. Padding is
+     kept for the tap target even though nothing is drawn around it. */
+  .sentbtn{border:none;background:transparent;color:var(--muted);padding:6px 4px;font-size:13px;
+    font-weight:400;cursor:pointer;transition:.15s;flex:none;font-family:var(--font);
+    display:inline-flex;align-items:center;gap:5px;}
+  .sentbtn:hover{color:var(--dim);}
+  .sentbtn.on{color:#33C39E;font-weight:600;}
+  .sentbtn svg{opacity:0;transition:.15s;}
+  .sentbtn.on svg{opacity:1;}
+  /* grade + style as one identity */
+  .cident{display:flex;align-items:center;gap:9px;flex:1;min-width:0;background:transparent;
+    border:none;padding:0;cursor:pointer;font-family:var(--font);text-align:left;}
+  .cstyles{font-size:13px;color:var(--dim);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Text toggles, not filled pills. A row of solid white capsules dominated
+     the screen; selection reads well enough as weight plus a hairline. */
+  .chip{border:none;background:transparent;color:var(--muted);padding:4px 1px;font-size:13px;
+    font-weight:400;cursor:pointer;transition:.15s;font-family:var(--font);line-height:1.3;}
+  .chip:hover{color:var(--dim);}
+  .chip.on{color:var(--chalk);font-weight:600;}
+  /* Sits in the chip row, so it reads as one of them until focused. */
+  .styleadd{width:22px;padding:4px 1px;background:transparent;border:none;
+    border-bottom:1px solid transparent;border-radius:0;color:var(--chalk);}
+  .styleadd::placeholder{color:var(--muted);}
+  .styleadd:focus{border-bottom-color:var(--line);width:110px;}
+  .prompts{display:flex;flex-wrap:wrap;gap:5px 15px;margin-top:12px;}
+  .attlbl{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;}
+
+  /* weekly plan strip */
+  .plan{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
+  .planhead{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;width:100%;background:transparent;border:none;font-family:var(--font);font-size:15px;text-align:left;}
+  .plandow{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);flex:none;}
+  .plantext{flex:1;min-width:0;font-size:15px;color:var(--chalk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .plantext.rest{color:var(--muted);}
+  .planbody{padding:4px 13px 13px;border-top:1px solid var(--line);}
+  .day{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);}
+  .day:last-of-type{border-bottom:none;}
+  .day.rest{opacity:.62;}
+  .dow{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.08em;color:var(--dim);width:30px;text-transform:uppercase;flex:none;}
+  .mk{display:inline-flex;align-items:center;flex:none;width:12px;justify-content:center;}
+  .mk svg{color:var(--muted);}
+  .dot{width:7px;height:7px;border-radius:50%;background:#E7C13B;}
+  .planin{flex:1;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:16px;outline:none;padding:2px 0;min-width:0;}
+  .planin::placeholder{color:var(--muted);}
+
+  /* unsaved-changes bar */
+  .savebar{position:sticky;bottom:calc(80px + env(safe-area-inset-bottom));z-index:5;display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+    background:rgba(32,28,23,.97);border:1px solid #4a412c;border-radius:14px;padding:11px 12px;
+    margin-top:14px;margin-bottom:calc(4px + env(safe-area-inset-bottom));box-shadow:0 8px 26px rgba(0,0,0,.5);}
+  .savebar .msg{font-family:var(--mono);font-size:11px;color:#E7C13B;letter-spacing:.06em;flex:1;min-width:96px;display:flex;align-items:center;gap:7px;}
+  .savedot{width:7px;height:7px;border-radius:50%;background:#E7C13B;flex:none;}
+  .draftnote{font-family:var(--mono);font-size:11px;color:var(--muted);margin:-6px 2px 12px;}
+  /* transient "Saved" confirmation */
+  .toast{position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));z-index:50;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    background:rgba(51,195,158,.14);border:1px solid rgba(51,195,158,.42);color:#33C39E;
+    padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;
+    opacity:0;pointer-events:none;transform:translateX(-50%) translateY(8px);transition:opacity .2s,transform .2s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* exercise quick-add */
+  .chipgroup{display:flex;flex-wrap:wrap;align-items:center;gap:5px 15px;margin-bottom:7px;}
+  .chipglabel{font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;font-size:11px;color:var(--muted);width:62px;flex:none;}
+  /* Add-panel chips are actions (tap to add), so they read as quiet pills —
+     distinct from the borderless text toggles used for styles. */
+  .chip.add{border:1px solid var(--line);border-radius:999px;padding:7px 13px;color:var(--dim);}
+  .chip.add:hover{color:var(--chalk);border-color:#4b463d;}
+  .presetwrap{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:999px;padding:1px 3px 1px 10px;background:var(--raise);}
+  .presetin{background:transparent;border:none;padding:4px 0;font-size:16px;font-weight:600;width:100px;min-width:0;}
+  .presetin:focus{border:none;}
+
+  /* exercises */
+  .ex{border:1px solid var(--line);border-radius:12px;padding:11px;margin-bottom:9px;background:var(--raise);}
+  .extop{display:flex;align-items:center;gap:9px;}
+  .exname{flex:1;min-width:0;background:transparent;border:none;color:var(--chalk);font-family:var(--font);font-size:16px;font-weight:600;outline:none;padding:2px 0;}
+  .exname::placeholder{color:var(--muted);font-weight:400;}
+  .exlast{font-size:13px;color:var(--muted);margin-top:3px;font-style:italic;}
+  .sethead{display:flex;align-items:center;gap:7px;margin-top:11px;padding-bottom:2px;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);}
+  .sethead>span:nth-child(2),.sethead>span:nth-child(4){flex:1;text-align:center;min-width:0;}
+  .addbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:7px;padding:14px;font-size:15px;}
+  /* endurance entry: 2×2 of labelled metric fields */
+  .endugrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;}
+  .endufield{display:flex;flex-direction:column;gap:5px;}
+  .endulabel{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+  .endufield .setin{text-align:left;}
+  .endupace{margin-top:10px;font-size:13px;color:#33C39E;font-variant-numeric:tabular-nums;}
+  .setrow{display:flex;align-items:center;gap:7px;margin-top:7px;}
+  .setn{font-family:var(--mono);font-size:11px;color:var(--muted);width:16px;flex:none;}
+  .setin{background:#16130F;border:1px solid var(--line);border-radius:8px;color:var(--chalk);font-family:var(--mono);font-size:16px;padding:7px 8px;outline:none;width:100%;min-width:0;text-align:center;}
+  .setin:focus{border-color:#4b463d;}
+  .setx{font-family:var(--mono);font-size:13px;color:var(--muted);flex:none;}
+  .setunit{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;width:22px;}
+
+  /* stats + charts */
+  /* boulder / sport switch */
+  .seg{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px;}
+  .segbtn{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-family:var(--font);
+    font-weight:600;font-size:15px;border-radius:9px;cursor:pointer;transition:.15s;}
+  .segbtn:hover{color:var(--dim);}
+  .segbtn.on{background:var(--raise);color:var(--chalk);}
+
+  .ranges{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
+  .rchip{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s;}
+  .rchip:hover{color:var(--dim);}
+  .rchip.on{background:var(--raise);color:var(--chalk);border-color:#4b463d;}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 8px;text-align:center;}
+  .stat .n{font-family:var(--mono);font-size:20px;font-weight:700;color:var(--chalk);line-height:1.15;}
+  .stat .k{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-top:6px;}
+  .chart{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 12px;margin-bottom:12px;}
+  .ctitle{font-size:15px;font-weight:700;color:var(--chalk);margin:0 2px 1px;}
+  .csub{font-family:var(--mono);font-size:11px;color:var(--muted);margin:0 2px 12px;}
+  .cnote{font-size:13px;color:var(--muted);margin:2px;}
+
+  .volrow{display:flex;align-items:flex-end;gap:6px;}
+  .volcol{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0;}
+  .voltrack{height:110px;width:100%;display:flex;align-items:flex-end;}
+  .volbar{width:100%;background:#33C39E;border-radius:5px 5px 0 0;min-height:3px;position:relative;display:flex;justify-content:center;}
+  .voln{position:absolute;top:-16px;font-family:var(--mono);font-size:11px;color:var(--dim);}
+  .vollab{font-family:var(--mono);font-size:11px;color:var(--muted);white-space:nowrap;}
+
+  .pyrow{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .pyg{font-family:var(--mono);font-size:13px;font-weight:700;width:38px;flex:none;}
+  .pytrack{position:relative;flex:1;background:var(--raise);border-radius:6px;height:16px;overflow:hidden;}
+  .pyghost{position:absolute;top:0;left:0;height:100%;border-radius:6px;opacity:.24;}
+  .pybar{position:relative;height:100%;border-radius:6px;min-width:4px;}
+  .pyc{font-family:var(--mono);font-size:13px;color:var(--dim);width:54px;text-align:right;flex:none;}
+
+  /* session history */
+  .sess{background:var(--panel);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden;}
+  .sesshead{display:flex;align-items:center;gap:10px;padding:13px 14px;cursor:pointer;}
+  .sessdate{font-family:var(--mono);font-size:13px;color:var(--chalk);font-weight:600;flex:none;}
+  .sesssum{flex:1;min-width:0;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sessbody{padding:0 14px 14px;border-top:1px solid var(--line);}
+  .sessgrp{margin-top:12px;}
+  .sessgl{font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:7px;}
+  .sline{font-size:13px;color:var(--dim);padding:3px 0;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;}
+  .sline b{color:var(--chalk);font-weight:600;font-family:var(--mono);font-size:13px;}
+  .stag{font-size:11px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:1px 6px;}
+  .snote{font-family:var(--serif);font-size:15px;color:var(--dim);white-space:pre-wrap;
+    border-left:2px solid var(--line);padding-left:11px;line-height:1.65;margin-top:6px;}
+
+  .empty{text-align:center;padding:34px 16px;color:var(--muted);}
+  .empty svg{margin-bottom:10px;color:var(--dim);}
+  .empty p{font-size:15px;margin:0;max-width:300px;margin-left:auto;margin-right:auto;}
+  .foot{margin-top:20px;display:flex;justify-content:center;}
+  .reset{background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--mono);transition:.15s;}
+  .reset:hover{color:#E5484D;}
+  .datarow{display:flex;gap:8px;flex-wrap:wrap;}
+  .dmsg{font-family:var(--mono);font-size:13px;margin-top:11px;line-height:1.5;}
+  .dmsg.ok{color:#33C39E;}
+  .dmsg.err{color:#E5484D;}
+
+
+  button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:2px solid #6aa9e8;outline-offset:2px;}
+  @media (max-width:460px){
+    .stats{grid-template-columns:repeat(2,1fr);}
+    .tab{font-size:11px;gap:3px;padding:9px 2px;}
+    .tab svg{width:13px;height:13px;}
+  }
+  @media (prefers-reduced-motion:reduce){ *{transition:none !important;} }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+"use strict";
+
+/* ---------- storage ---------- */
+var mem = {};
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return (k in mem) ? mem[k] : null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){ mem[k]=v; } }
+function lsDel(k){ try{ localStorage.removeItem(k); }catch(e){ delete mem[k]; } }
+function load(k, def){ var v = lsGet(k); if(v==null) return def; try{ return JSON.parse(v); }catch(e){ return def; } }
+function save(k, v){ lsSet(k, JSON.stringify(v)); }
+
+/* ---------- colour ramp (shared by grades) ---------- */
+var RAMP = [[0,'#4C9BE8'],[0.25,'#33C39E'],[0.5,'#E7C13B'],[0.72,'#F0873B'],[1,'#E5484D']];
+function hexToRgb(h){ h=h.replace('#',''); return [parseInt(h.slice(0,2),16),parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]; }
+function lerp(a,b,t){ return a+(b-a)*t; }
+function toHex(x){ var s=Math.round(x).toString(16); return s.length<2?'0'+s:s; }
+function rampColor(t){
+  t=Math.max(0,Math.min(1,t));
+  for(var i=0;i<RAMP.length-1;i++){
+    var t0=RAMP[i][0],c0=RAMP[i][1],t1=RAMP[i+1][0],c1=RAMP[i+1][1];
+    if(t<=t1){ var k=(t1===t0)?0:(t-t0)/(t1-t0); var a=hexToRgb(c0),b=hexToRgb(c1);
+      return '#'+toHex(lerp(a[0],b[0],k))+toHex(lerp(a[1],b[1],k))+toHex(lerp(a[2],b[2],k)); }
+  }
+  return RAMP[RAMP.length-1][1];
+}
+function vColor(g){ return rampColor((g-2)/8); }              /* V3..V9 */
+function rColor(i){ return rampColor(i/15); }                  /* .10a.. .13d */
+
+/* ---------- dates ---------- */
+function pad2(n){ return (n<10?'0':'')+n; }
+function toLocal(d){ return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate()); }
+function todayStr(){ return toLocal(new Date()); }
+function parseLocal(s){ var p=String(s).split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+function fmtDate(s){ return parseLocal(s).toLocaleDateString(undefined,{weekday:'short',day:'numeric',month:'short'}); }
+function fmtShort(s){ return parseLocal(s).toLocaleDateString(undefined,{day:'numeric',month:'short'}); }
+function addDays(s,n){ var d=parseLocal(s); d.setDate(d.getDate()+n); return toLocal(d); }
+function weekStart(s){ var d=parseLocal(s); var off=(d.getDay()+6)%7; d.setDate(d.getDate()-off); return toLocal(d); }
+function monthStart(s){ var d=parseLocal(s); d.setDate(1); return toLocal(d); }
+function addMonths(s,n){ var d=parseLocal(s); d.setMonth(d.getMonth()+n); return toLocal(d); }
+function isDateStr(s){ return typeof s==='string' && /^\d{4}-\d{2}-\d{2}$/.test(s); }
+
+/* ---------- constants ---------- */
+var V_GRADES=[3,4,5,6,7,8,9];
+var SPORT=['.10a','.10b','.10c','.10d','.11a','.11b','.11c','.11d','.12a','.12b','.12c','.12d','.13a','.13b','.13c','.13d'];
+/* Optional scaffolds for the diary. A session with no send still has a
+   highlight, a lesson and a next experiment in it. */
+var NOTE_PROMPTS=['Highlight','Learned','Process win','Challenge','Next experiment'];
+var BASE_BOULDER_TAGS=['power','dynamic','slab','coordo','moon','tension'];
+var BASE_ROUTE_TAGS=['indoor','outdoor'];
+var SCHEMA=3;
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var DEFAULT_PLAN={ Mon:'Strength — hangboard + frenchies', Tue:'Rest / mobility', Wed:'Power — limit boulders + campus', Thu:'Rest / antagonists', Fri:'Technique — precision, tension, commitment', Sat:'Projecting — apply it', Sun:'Rest' };
+/* Word-bounded so "Wrestling" is not mistaken for a rest day. */
+function isRest(f){ return !f || !f.trim() || /\brest\b/i.test(f); }
+
+var DEFAULT_EX_GROUPS=[
+  { label:'Strength',  items:['Hangboard','Frenchies'] },
+  { label:'Power',     items:['Limit boulders','Campus'] },
+  { label:'Technique', items:['Precision','Tension','Commitment'] },
+  { label:'Support',   items:['Core','Antagonists','Stretch'] },
+  { label:'Weight',    items:['Bench press','Box Jumping','Deadlift'] }
+];
+
+/* ---------- icons ---------- */
+var ICONS={
+  plus:'<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  minus:'<line x1="5" y1="12" x2="19" y2="12"/>',
+  x:'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  trash:'<polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  mountain:'<path d="M8 3l4 8 5-5 5 11H2L8 3z"/>',
+  dumbbell:'<path d="M6.5 6.5v11M17.5 6.5v11M3 9v6M21 9v6M6.5 12h11"/>',
+  trend:'<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>',
+  chev:'<polyline points="6 9 12 15 18 9"/>',
+  check:'<polyline points="20 6 9 17 4 12"/>',
+  up:'<line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/>',
+  moon:'<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>',
+  rotate:'<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>'
+};
+function ic(name,size){
+  var s=size||16, span=document.createElement('span'); span.style.display='inline-flex';
+  span.innerHTML='<svg width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+ICONS[name]+'</svg>';
+  return span;
+}
+
+/* ---------- dom helper ---------- */
+function h(tag, props){
+  var el=document.createElement(tag), i;
+  if(props){
+    for(var k in props){ if(!props.hasOwnProperty(k)) continue; var v=props[k];
+      if(v==null) continue;
+      if(k==='class') el.className=v;
+      else if(k==='html') el.innerHTML=v;
+      else if(k==='style' && typeof v==='object'){ for(var sk in v){ if(v.hasOwnProperty(sk)) el.style[sk]=v[sk]; } }
+      else if(k.slice(0,2)==='on' && typeof v==='function') el.addEventListener(k.slice(2).toLowerCase(), v);
+      else if(k in el){ try{ el[k]=v; }catch(e){ el.setAttribute(k,v); } }
+      else el.setAttribute(k,v);
+    }
+  }
+  for(i=2;i<arguments.length;i++) appendKid(el, arguments[i]);
+  return el;
+}
+function appendKid(el, kid){
+  if(kid==null || kid===false || kid==='') return;
+  if(Array.isArray(kid)){ for(var i=0;i<kid.length;i++) appendKid(el,kid[i]); return; }
+  el.appendChild(kid.nodeType ? kid : document.createTextNode(String(kid)));
+}
+function newId(){ return Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7); }
+
+/* ---------- state ---------- */
+var sessions = load('crux:sessions', []);
+var tags = load('crux:tags', null) || { boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
+/* Same key and shape as the pre-rewrite Week tab, so a plan written back then
+   is picked up rather than silently discarded. Untrusted-input safe: it is
+   also what validates an imported plan. */
+function normalizePlan(raw, base){
+  var out={}, i, d, v;
+  for(i=0;i<DAYS.length;i++){
+    d=DAYS[i]; v=raw && raw[d];
+    out[d] = (typeof v==='string') ? v.slice(0,120) : base[d];
+  }
+  return out;
+}
+var plan = normalizePlan(load('crux:plan', null), DEFAULT_PLAN);
+function savePlan(){ save('crux:plan', plan); }
+
+/* Quick-add presets are editable, so a typo like "Dead life" can be fixed in
+   place rather than living in the chip row forever. */
+function normalizePresets(raw){
+  if(!Array.isArray(raw)) return null;
+  var out=raw.map(function(g){
+    if(!g || typeof g!=='object') return null;
+    var items=Array.isArray(g.items) ? g.items.filter(function(s){ return typeof s==='string'; })
+      .map(function(s){ return s.slice(0,40); }).slice(0,24) : [];
+    return { label:String(g.label||'').slice(0,20), items:items };
+  }).filter(Boolean);
+  return out.length ? out : null;
+}
+var exPresets = normalizePresets(load('crux:expresets', null)) || cloneOf(DEFAULT_EX_GROUPS);
+function savePresets(){ save('crux:expresets', exPresets); }
+
+var tab='climb', curDate=todayStr(), range='month';
+var openSession=null, resetArmed=false, dataMsg=null, planOpen=false;
+var exEdit=false, addOpen=false;
+/* Styles armed for the next climb you log. You usually work several problems
+   of one style in a row, so this carries over — one tap per boulder after the
+   first. In memory only, and cleared when the date changes, so a stale style
+   can never silently attach itself to another day's session. */
+var pending={ boulder:[], route:[] };
+/* The climb the STYLE row is currently bound to — the last one logged. It
+   makes the order irrelevant: arm a style then tap a grade, or tap a grade
+   then pick the style, and either way it lands on the same climb. */
+var activeClimb={ boulder:null, route:null };
+function syncActiveStyle(kind){
+  var id=activeClimb[kind];
+  if(!id) return;                       /* nothing logged yet — just arming */
+  var d=editable(), arr = kind==='boulder' ? d.boulders : d.routes, i;
+  for(i=0;i<arr.length;i++){
+    if(arr[i].id===id){ arr[i].tags=pending[kind].slice(); touch(); return; }
+  }
+  activeClimb[kind]=null;               /* it was deleted */
+}
+var climbMode = (load('crux:climbmode','boulder')==='sport') ? 'sport' : 'boulder';
+/* Set to a date by Save, so the logging pages blank out ready for the next
+   entry. Cleared as soon as you move to another date, which reloads that
+   day's saved work for correction. */
+var justSaved=null;
+var tabsHost, viewHost;
+
+function saveSessions(){ save('crux:sessions', sessions); }
+function saveTags(){ save('crux:tags', tags); }
+
+/* ---------- migration: tally-shaped sessions -> individual climbs ---------- */
+function migrate(){
+  var stored=load('crux:schema', 1);
+  if(stored>=SCHEMA) return;
+  sessions=sessions.map(function(s){
+    if(!s || typeof s!=='object') return null;
+    if(Array.isArray(s.boulders)) return s;           /* already new shape */
+    var boulders=[];
+    function fromTally(map, sent){
+      if(!map || typeof map!=='object') return;
+      Object.keys(map).forEach(function(k){
+        var g=Number(k), n=Math.round(Number(map[k]))||0;
+        if(!isFinite(g)) return;
+        g=Math.max(3,Math.min(9,g));                  /* old scale was V0..V12 */
+        for(var i=0;i<n;i++) boulders.push({ id:newId(), grade:g, attempts:1, sent:sent, tags:[] });
+      });
+    }
+    fromTally(s.sends, true);
+    fromTally(s.attempts, false);
+    var exercises=(s.exercises||[]).map(function(e){
+      var n=Math.max(1, Math.round(Number(e.sets))||1);
+      var sets=[]; for(var i=0;i<n;i++) sets.push({ weight:null, reps:null });
+      var nm=e.name||'Exercise';
+      if(e.detail) nm=nm+' ('+e.detail+')';
+      return { id:newId(), name:nm, sets:sets };
+    });
+    return { id:s.id||newId(), date:s.date, notes:s.notes||'', rpe:(typeof s.rpe==='number'?s.rpe:null),
+             boulders:boulders, routes:[], exercises:exercises };
+  }).filter(Boolean);
+  saveSessions();
+  save('crux:schema', SCHEMA);
+}
+migrate();
+
+/* ---------- session accessors ----------
+   Edits do NOT go straight into `sessions`. They go into a per-date draft, and
+   only land when Save is pressed — so a stray tap is discardable. Drafts are
+   themselves persisted, so staging cannot cost you work either: close the tab
+   mid-session and the unsaved draft is still there next time.
+   Drafts are keyed by date, so switching days never silently drops one. */
+var drafts = load('crux:drafts', null) || {};
+function persistDrafts(){ save('crux:drafts', drafts); }
+function cloneOf(o){ return JSON.parse(JSON.stringify(o)); }
+function blankSession(date){ return { id:newId(), date:date, notes:'', rpe:null, boulders:[], routes:[], exercises:[], endurance:[] }; }
+/* Older saved sessions predate endurance; default the arrays so edit handlers
+   can push without guarding every call site. */
+function withArrays(s){
+  if(!s) return s;
+  if(!s.boulders) s.boulders=[]; if(!s.routes) s.routes=[];
+  if(!s.exercises) s.exercises=[]; if(!s.endurance) s.endurance=[];
+  return s;
+}
+
+function findSession(date){
+  for(var i=0;i<sessions.length;i++) if(sessions[i].date===date) return sessions[i];
+  return null;
+}
+/* What the Climb/Train tabs render: the draft if one exists, else what is
+   saved — except straight after a save, when the page is deliberately blank so
+   you can log the next thing. */
+function viewOf(date){
+  if(drafts[date]) return drafts[date];
+  if(justSaved===date) return null;
+  return findSession(date);
+}
+/* What any edit handler mutates. Normally seeds from the saved session, so
+   editing an already-saved day stages rather than writing live. Straight after
+   a save it starts blank and is marked to append, so a second save adds to the
+   day instead of replacing what is already there. */
+function editable(){
+  if(!drafts[curDate]){
+    if(justSaved===curDate){
+      var fresh=blankSession(curDate); fresh.append=true; drafts[curDate]=fresh;
+    } else {
+      var s=findSession(curDate);
+      drafts[curDate] = s ? withArrays(cloneOf(s)) : blankSession(curDate);
+    }
+  }
+  return drafts[curDate];
+}
+function touch(){ persistDrafts(); }
+
+function isEmptySession(s){
+  return !(s.boulders||[]).length && !(s.routes||[]).length && !(s.exercises||[]).length
+    && !(s.endurance||[]).length && !(s.notes||'').trim();
+}
+function sessionShape(s){
+  if(!s) return JSON.stringify({notes:'',rpe:null,boulders:[],routes:[],exercises:[],endurance:[]});
+  return JSON.stringify({ notes:(s.notes||''), rpe:(s.rpe==null?null:s.rpe),
+    boulders:(s.boulders||[]), routes:(s.routes||[]), exercises:(s.exercises||[]), endurance:(s.endurance||[]) });
+}
+function isDirty(date){
+  var dr=drafts[date];
+  if(!dr) return false;
+  if(dr.append) return !isEmptySession(dr);        /* a fresh post-save entry */
+  return sessionShape(dr) !== sessionShape(findSession(date));
+}
+function saveDraftSession(){
+  var d=curDate, dr=drafts[d], i, at=-1, cur;
+  if(!dr) return;
+  for(i=0;i<sessions.length;i++) if(sessions[i].date===d){ at=i; break; }
+
+  if(dr.append && at>=0){
+    /* Second save on a day that is already recorded: add to it, never replace,
+       so the earlier entries survive. */
+    cur=withArrays(sessions[at]);
+    cur.boulders=cur.boulders.concat(cloneOf(dr.boulders));
+    cur.routes=cur.routes.concat(cloneOf(dr.routes));
+    cur.exercises=cur.exercises.concat(cloneOf(dr.exercises));
+    cur.endurance=cur.endurance.concat(cloneOf(dr.endurance||[]));
+    if((dr.notes||'').trim()) cur.notes = (cur.notes||'').trim() ? cur.notes+'\n\n'+dr.notes : dr.notes;
+    if(dr.rpe!=null) cur.rpe=dr.rpe;
+  } else {
+    var clean=cloneOf(dr); delete clean.append;
+    if(isEmptySession(clean)){ if(at>=0) sessions.splice(at,1); }   /* emptied a day = delete it */
+    else if(at>=0) sessions[at]=clean;
+    else sessions.push(clean);
+  }
+
+  delete drafts[d]; persistDrafts();
+  activeClimb={ boulder:null, route:null };
+  justSaved=d;                       /* blanks the logging pages for the next entry */
+  commit(); renderView();
+  toast('Saved');                    /* the page blanks on save — confirm it landed */
+}
+function discardDraftSession(){ delete drafts[curDate]; persistDrafts(); renderView(); }
+
+function commit(){
+  sessions=sessions.filter(function(s){ return !isEmptySession(s); });
+  sessions.sort(function(a,b){ return a.date<b.date?1:a.date>b.date?-1:0; });
+  saveSessions();
+}
+
+/* Shown on both Climb and Train — one draft per day, so one bar serves both.
+   Always in the DOM and toggled by display, never conditionally rendered: text
+   fields call refreshSaveBar() on input, and a re-render there would blur the
+   field and drop the caret mid-word. */
+var saveBarEl=null, draftNoteEl=null;
+function saveBar(){
+  saveBarEl = h('div',{class:'savebar'},
+    h('span',{class:'msg'}, h('span',{class:'savedot'}), 'UNSAVED'),
+    h('button',{class:'btn ghost sm', onclick:discardDraftSession},'Discard'),
+    h('button',{class:'btn primary sm', onclick:saveDraftSession},'Save session')
+  );
+  saveBarEl.style.display = isDirty(curDate) ? '' : 'none';
+  return saveBarEl;
+}
+function draftNote(){
+  draftNoteEl = h('div',{class:'draftnote'},'DRAFT — not saved yet');
+  draftNoteEl.style.display = isDirty(curDate) ? '' : 'none';
+  return draftNoteEl;
+}
+function refreshSaveBar(){
+  var on = isDirty(curDate);
+  if(saveBarEl) saveBarEl.style.display = on ? '' : 'none';
+  if(draftNoteEl) draftNoteEl.style.display = on ? '' : 'none';
+}
+function sessionsAsc(){
+  return sessions.slice().sort(function(a,b){ return a.date<b.date?-1:a.date>b.date?1:0; });
+}
+
+/* ---------- header + tabs ---------- */
+var PEAK='<svg viewBox="0 0 512 512" width="30" height="30" aria-label="Cookie" role="img"><path d="M84 384 L196 214 L262 288 L344 158 L432 384" fill="none" stroke="#F1EDE6" stroke-width="30" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+function buildHeader(){
+  return h('div',{class:'top'},
+    h('span',{class:'mark', html:PEAK})
+  );
+}
+function tabBtn(id,label,icon){
+  return h('button',{ class:'tab'+(tab===id?' active':''),
+    onclick:function(){ tab=id; dataMsg=null; resetArmed=false; exEdit=false; addOpen=false; renderTabs(); renderView(); } },
+    ic(icon,16), label);
+}
+function renderTabs(){
+  tabsHost.innerHTML='';
+  tabsHost.appendChild(h('div',{class:'tabs'},
+    tabBtn('climb','Climb','mountain'),
+    tabBtn('train','Train','dumbbell'),
+    tabBtn('analysis','Analysis','trend'),
+    tabBtn('data','Data','save')
+  ));
+}
+
+/* ---------- shared: date bar ---------- */
+function dateBar(){
+  return h('div',{style:{display:'flex',alignItems:'center',gap:'10px',flexWrap:'wrap',marginBottom:'14px'}},
+    h('input',{type:'date', class:'inp', value:curDate, 'aria-label':'Session date',
+      onchange:function(e){ curDate=e.target.value||todayStr(); justSaved=null;
+        pending={ boulder:[], route:[] }; activeClimb={ boulder:null, route:null }; renderView(); }}),
+    h('button',{class:'btn ghost sm', onclick:function(){ curDate=todayStr(); justSaved=null;
+        pending={ boulder:[], route:[] }; activeClimb={ boulder:null, route:null }; renderView(); }},'Today')
+  );
+}
+
+
+/* ---------- shared: armed-style row ---------- */
+/* Sits above the grades. Whatever is lit here attaches to the next climb you
+   log, so grade and style are captured in one tap rather than style being an
+   afterthought behind a picker. */
+function styleRow(kind){
+  var row=h('div',{class:'chipgroup', style:{marginBottom:'11px'}});
+  row.appendChild(h('span',{class:'chipglabel'},'STYLE'));
+  tags[kind].forEach(function(t){
+    var on=pending[kind].indexOf(t)>=0;
+    row.appendChild(h('button',{class:'chip'+(on?' on':''), 'aria-pressed':String(on),
+      onclick:function(){
+        var i=pending[kind].indexOf(t);
+        if(i>=0) pending[kind].splice(i,1); else pending[kind].push(t);
+        syncActiveStyle(kind); renderView();
+      }}, t));
+  });
+  var input=h('input',{class:'inp styleadd', placeholder:'+', maxLength:24, 'aria-label':'New style'});
+  function addStyle(){
+    var v=input.value.trim().toLowerCase();
+    if(!v) return;
+    if(tags[kind].indexOf(v)<0){ tags[kind].push(v); saveTags(); }
+    if(pending[kind].indexOf(v)<0) pending[kind].push(v);
+    input.value=''; syncActiveStyle(kind); renderView();
+  }
+  input.addEventListener('keydown', function(e){ if(e.key==='Enter'){ e.preventDefault(); addStyle(); } });
+  row.appendChild(input);
+  return row;
+}
+
+/* ---------- shared: weekly plan strip ---------- */
+/* Collapsed it shows one line — the plan for whichever day curDate points at,
+   so it matches the session you are actually editing. Expanded it is the full
+   week editor. Kept out of the nav because a sixth tab does not fit at 375px,
+   and a plan you have to navigate to is a plan you stop reading. */
+function planStrip(){
+  var dow = DAYS[(parseLocal(curDate).getDay()+6)%7];
+  var box = h('div',{class:'plan'});
+  var txt = plan[dow]||'';
+  var head = h('span',{class:'plantext'+(isRest(txt)?' rest':'')}, txt.trim()||'Rest');
+  var chev = ic('chev',15);
+  chev.style.color='var(--muted)';
+  chev.style.transform = planOpen ? 'rotate(180deg)' : '';
+  box.appendChild(h('button',{class:'planhead', 'aria-expanded':String(planOpen),
+    onclick:function(){ planOpen=!planOpen; renderView(); }},
+    h('span',{class:'plandow'}, dow.toUpperCase()), head, chev));
+  if(planOpen) box.appendChild(planBody(dow, head));
+  return box;
+}
+
+function planBody(curDow, headEl){
+  var body=h('div',{class:'planbody'});
+  var days=h('div',{});          /* own wrapper so .day:last-of-type actually matches Sunday */
+  DAYS.forEach(function(d){
+    var row=h('div',{class:'day'+(isRest(plan[d])?' rest':'')});
+    var mk=h('span',{class:'mk'});
+    function renderMk(){ mk.innerHTML=''; mk.appendChild(isRest(plan[d]) ? ic('moon',13) : h('span',{class:'dot'})); }
+    renderMk();
+    /* Patches in place rather than calling renderView() — a re-render per
+       keystroke would blur the field and drop the caret mid-word. */
+    var input=h('input',{class:'planin', value:plan[d]||'', maxLength:120, 'aria-label':d+' plan',
+      placeholder:'Rest day — tap to add training',
+      oninput:function(e){
+        plan[d]=e.target.value; savePlan();
+        row.className='day'+(isRest(plan[d])?' rest':''); renderMk();
+        if(d===curDow){
+          headEl.textContent = plan[d].trim()||'Rest';
+          headEl.className='plantext'+(isRest(plan[d])?' rest':'');
+        }
+      }});
+    row.appendChild(h('span',{class:'dow'},d));
+    row.appendChild(mk);
+    row.appendChild(input);
+    days.appendChild(row);
+  });
+  body.appendChild(days);
+  body.appendChild(h('div',{class:'foot'},
+    h('button',{class:'reset', onclick:function(){
+      plan=normalizePlan(null, DEFAULT_PLAN); savePlan(); renderView();
+    }}, ic('rotate',13),'Reset plan to default')));
+  return body;
+}
+
+/* ---------- climb view ---------- */
+function buildClimb(){
+  var wrap=h('div',{class:'wrap'});
+  var s=viewOf(curDate);
+  wrap.appendChild(planStrip());
+  wrap.appendChild(dateBar());
+  wrap.appendChild(draftNote());
+
+  /* Boulder and sport are separate sub-pages: a normal session is one or the
+     other, so showing both at once was half a screen of dead weight. */
+  var seg=h('div',{class:'seg'});
+  [['boulder','Boulder'],['sport','Sport']].forEach(function(m){
+    seg.appendChild(h('button',{class:'segbtn'+(climbMode===m[0]?' on':''),
+      onclick:function(){ climbMode=m[0]; save('crux:climbmode',climbMode); renderView(); }}, m[1]));
+  });
+  wrap.appendChild(seg);
+
+  if(climbMode==='boulder'){
+    var card=h('div',{class:'card'});
+    card.appendChild(h('div',{class:'lbl first'},'Boulders'));
+    card.appendChild(styleRow('boulder'));
+    var picker=h('div',{class:'grades'});
+    V_GRADES.forEach(function(g){
+      picker.appendChild(h('button',{class:'gpill', style:{color:vColor(g)}, 'aria-label':'Log a V'+g,
+        onclick:function(){
+          var nb={ id:newId(), grade:g, attempts:1, sent:true, tags:pending.boulder.slice() };
+          editable().boulders.push(nb); activeClimb.boulder=nb.id;
+          touch(); renderView();
+        }},'V'+g));
+    });
+    card.appendChild(picker);
+    var list=h('div',{style:{marginTop:'12px'}});
+    ((s&&s.boulders)||[]).forEach(function(b){
+      list.appendChild(climbRow(b,'boulder','V'+b.grade, vColor(b.grade)));
+    });
+    if(s&&s.boulders.length) card.appendChild(list);
+    wrap.appendChild(card);
+  } else {
+    var rcard=h('div',{class:'card'});
+    rcard.appendChild(h('div',{class:'lbl first'},'Sport'));
+    rcard.appendChild(styleRow('route'));
+    var sel=h('select',{class:'inp', style:{maxWidth:'118px'}, 'aria-label':'Route grade'});
+    SPORT.forEach(function(lbl,i){ sel.appendChild(h('option',{value:String(i), selected:(i===4)}, lbl)); });
+    rcard.appendChild(h('div',{style:{display:'flex',gap:'8px',alignItems:'center',flexWrap:'wrap'}},
+      sel,
+      h('button',{class:'btn ghost sm', onclick:function(){
+        var nr={ id:newId(), grade:Number(sel.value), attempts:1, sent:true, tags:pending.route.slice() };
+        editable().routes.push(nr); activeClimb.route=nr.id;
+        touch(); renderView();
+      }},'Add route')
+    ));
+    var rlist=h('div',{style:{marginTop:'12px'}});
+    ((s&&s.routes)||[]).forEach(function(r){
+      rlist.appendChild(climbRow(r,'route',SPORT[r.grade], rColor(r.grade)));
+    });
+    if(s&&s.routes.length) rcard.appendChild(rlist);
+    wrap.appendChild(rcard);
+  }
+
+  /* One notes field per day, shown on both sub-pages — the diary belongs to
+     the session, not to whichever discipline you happened to open. */
+  var ncard=h('div',{class:'card'});
+  ncard.appendChild(h('div',{class:'lbl first'},'Session notes'));
+  var ta=h('textarea',{class:'inp', value:(s&&s.notes)||'',
+    oninput:function(e){ editable().notes=e.target.value; touch(); refreshSaveBar(); }});
+  ncard.appendChild(ta);
+
+  /* Optional scaffolds. Tapping one appends a labelled line — a session with
+     no send still has a highlight, a lesson and a next experiment in it. */
+  var prow=h('div',{class:'prompts'});
+  NOTE_PROMPTS.forEach(function(p){
+    prow.appendChild(h('button',{class:'chip', onclick:function(){
+      var cur=ta.value, marker=p+': ';
+      /* Plain string match rather than a regex built from the label, so
+         renaming a prompt to contain "(" or "." cannot silently break it. */
+      if(cur.indexOf('\n'+marker)>=0 || cur.indexOf(marker)===0){
+        ta.focus(); return;
+      }
+      var sep = (!cur || /\n$/.test(cur)) ? '' : '\n';
+      ta.value = cur + sep + p + ': ';
+      editable().notes=ta.value; touch(); refreshSaveBar();
+      ta.focus();
+      try{ ta.setSelectionRange(ta.value.length, ta.value.length); }catch(e){}
+    }}, p));
+  });
+  ncard.appendChild(prow);
+  wrap.appendChild(ncard);
+
+  wrap.appendChild(saveBar());
+  return wrap;
+}
+
+function climbRow(item, kind, label, color){
+  /* `item` may belong to the saved session, which must never be mutated in
+     place. Every handler re-resolves the same climb inside the draft, so the
+     first tap clones the day and edits the copy. */
+  function live(){
+    var d=editable(), arr = kind==='boulder' ? d.boulders : d.routes, i;
+    for(i=0;i<arr.length;i++) if(arr[i].id===item.id) return arr[i];
+    return null;
+  }
+  var row=h('div',{class:'climb'});
+  var top=h('div',{class:'climbtop'});
+
+  /* Read-only. Style is chosen once in the STYLE row above the grades — it is
+     not re-editable per climb, so a logged entry has nothing to tap. */
+  top.appendChild(h('span',{class:'cident'},
+    h('span',{class:'cg', style:{background:color}}, label),
+    (item.tags.length ? h('span',{class:'cstyles'}, item.tags.join(', ')) : null)
+  ));
+
+  row.appendChild(top);
+
+  /* Controls sit on their own line: identity + tries + stepper + sent +
+     delete cannot share a 375px row without crushing the style names. */
+  var ctl=h('div',{class:'climbctl'});
+  var val=h('span',{class:'val'}, String(item.attempts));
+  ctl.appendChild(h('span',{class:'attlbl'},'TRIES'));
+  ctl.appendChild(h('div',{class:'stepper'},
+    h('button',{'aria-label':'One fewer attempt', onclick:function(){
+      var it=live(); if(!it) return;
+      it.attempts=Math.max(1,it.attempts-1); val.textContent=it.attempts; touch(); refreshSaveBar();
+    }}, ic('minus',14)),
+    val,
+    h('button',{'aria-label':'One more attempt', onclick:function(){
+      var it=live(); if(!it) return;
+      it.attempts=it.attempts+1; val.textContent=it.attempts; touch(); refreshSaveBar();
+    }}, ic('plus',14))
+  ));
+
+  ctl.appendChild(h('button',{class:'sentbtn'+(item.sent?' on':''), 'aria-pressed':String(!!item.sent),
+    onclick:function(){ var it=live(); if(!it) return; it.sent=!it.sent; touch(); renderView(); }},
+    ic('check',13), item.sent?'sent':'proj'));
+
+  ctl.appendChild(h('button',{class:'del', 'aria-label':'Remove '+label, onclick:function(){
+    var d=editable();
+    var arr = kind==='boulder' ? d.boulders : d.routes, i;
+    for(i=0;i<arr.length;i++) if(arr[i].id===item.id){ arr.splice(i,1); break; }
+    touch(); renderView();
+  }}, ic('x',16)));
+  row.appendChild(ctl);
+
+
+  return row;
+}
+
+/* ---------- train view ---------- */
+function lastTimeFor(name, beforeDate){
+  var best=null;
+  sessions.forEach(function(s){
+    if(s.date>=beforeDate) return;
+    (s.exercises||[]).forEach(function(e){
+      if((e.name||'').toLowerCase()!==(name||'').toLowerCase()) return;
+      if(!best || s.date>best.date) best={ date:s.date, sets:e.sets||[] };
+    });
+  });
+  return best;
+}
+function fmtSets(sets){
+  return (sets||[]).filter(function(st){ return st.weight!=null || st.reps!=null; })
+    .map(function(st){ return (st.weight!=null?st.weight:'–')+'×'+(st.reps!=null?st.reps:'–'); }).join(', ');
+}
+
+/* Endurance — runs mostly, some hikes. Distance and time lead (they drive
+   pace, the metric that matters for running); elevation and pack trail for
+   the hike/ruck days. */
+var ENDURANCE_TYPES=['Run','Hike','Ruck','Incline','Stairs'];
+var ENDU_FIELDS=[
+  { key:'distance',  label:'Dist', unit:'km',  max:1000,  int:false },
+  { key:'minutes',   label:'Time', unit:'min', max:10000, int:true },
+  { key:'elevation', label:'Elev', unit:'m',   max:30000, int:true },
+  { key:'pack',      label:'Pack', unit:'kg',  max:200,   int:false }
+];
+/* Pace in min/km, formatted M:SS. */
+function fmtPace(min, km){
+  if(min==null || km==null || min<=0 || km<=0) return null;
+  var p=min/km, m=Math.floor(p), s=Math.round((p-m)*60);
+  if(s===60){ m++; s=0; }
+  return m+':'+(s<10?'0':'')+s+' /km';
+}
+function lastEnduranceFor(name, beforeDate){
+  var best=null;
+  sessions.forEach(function(s){
+    if(s.date>=beforeDate) return;
+    (s.endurance||[]).forEach(function(e){
+      if((e.name||'').toLowerCase()!==(name||'').toLowerCase()) return;
+      if(!best || s.date>best.date) best={ date:s.date,
+        elevation:e.elevation, minutes:e.minutes, distance:e.distance, pack:e.pack };
+    });
+  });
+  return best;
+}
+function fmtDuration(min){
+  min=Math.round(min);
+  if(min<60) return min+' min';
+  var h=Math.floor(min/60), m=min%60;
+  return h+'h'+(m?' '+m+'m':'');
+}
+function fmtEndurance(e){
+  var out=[];
+  if(e.distance!=null) out.push(e.distance+' km');
+  if(e.minutes!=null) out.push(e.minutes+' min');
+  var pace=fmtPace(e.minutes, e.distance);
+  if(pace) out.push(pace);
+  if(e.elevation!=null) out.push(e.elevation+' m');
+  if(e.pack!=null) out.push(e.pack+' kg');
+  return out.join(' · ');
+}
+
+function buildTrain(){
+  var wrap=h('div',{class:'wrap'});
+  var s=viewOf(curDate);
+  wrap.appendChild(planStrip());
+  wrap.appendChild(dateBar());
+  wrap.appendChild(draftNote());
+
+  function addNamed(nm){
+    nm=(nm||'').trim(); if(!nm) return;
+    var prev=lastTimeFor(nm, curDate);
+    var sets = prev ? prev.sets.map(function(st){ return { weight:st.weight, reps:st.reps }; }) : [{weight:null,reps:null}];
+    if(!sets.length) sets=[{weight:null,reps:null}];
+    editable().exercises.push({ id:newId(), name:nm, sets:sets });
+    addOpen=false; touch(); renderView();
+  }
+  function addEndurance(nm){
+    nm=(nm||'').trim(); if(!nm) return;
+    var prev=lastEnduranceFor(nm, curDate);
+    editable().endurance.push({ id:newId(), name:nm,
+      elevation: prev?prev.elevation:null, minutes: prev?prev.minutes:null,
+      distance: prev?prev.distance:null, pack: prev?prev.pack:null });
+    addOpen=false; touch(); renderView();
+  }
+
+  var loggedEx=(s&&s.exercises)||[], loggedEn=(s&&s.endurance)||[];
+
+  /* What you did comes first; the preset wall is behind a button so it is not
+     a screenful of chips every time you open the page. */
+  if(loggedEx.length || loggedEn.length){
+    var list=h('div',{});
+    loggedEn.forEach(function(en){ list.appendChild(enduranceRow(en)); });
+    loggedEx.forEach(function(ex){ list.appendChild(exerciseRow(ex)); });
+    wrap.appendChild(list);
+  }
+
+  /* The preset list only appears once you ask for it — an empty day is just
+     the Add button, not a wall of chips. */
+  if(!addOpen){
+    wrap.appendChild(h('button',{class:'btn ghost addbtn',
+      onclick:function(){ addOpen=true; renderView(); }}, ic('plus',15),' Add'));
+  } else {
+    var card=h('div',{class:'card'});
+    card.appendChild(h('div',{style:{display:'flex',alignItems:'center',gap:'8px',marginBottom:'12px'}},
+      h('span',{class:'lbl first', style:{margin:'0',flex:'1'}}, exEdit?'Editing presets':'Add'),
+      h('button',{class:'btn ghost sm', onclick:function(){ exEdit=!exEdit; renderView(); }}, exEdit?'Done':'Edit'),
+      (exEdit ? null : h('button',{class:'del','aria-label':'Close', onclick:function(){ addOpen=false; renderView(); }}, ic('x',18)))
+    ));
+
+    exPresets.forEach(function(g){
+      var grp=h('div',{class:'chipgroup'});
+      grp.appendChild(h('span',{class:'chipglabel'}, g.label));
+      g.items.forEach(function(nm, ni){
+        if(exEdit){
+          var inp=h('input',{class:'inp presetin', value:nm, maxLength:40, 'aria-label':'Rename '+nm,
+            oninput:function(e){ g.items[ni]=e.target.value; savePresets(); }});
+          grp.appendChild(h('span',{class:'presetwrap'}, inp,
+            h('button',{class:'del','aria-label':'Delete preset '+nm, onclick:function(){
+              g.items.splice(ni,1); savePresets(); renderView();
+            }}, ic('x',14))));
+        } else {
+          grp.appendChild(h('button',{class:'chip add', onclick:function(){ addNamed(nm); }}, nm));
+        }
+      });
+      if(exEdit) grp.appendChild(h('button',{class:'chip add', onclick:function(){
+        g.items.push('New exercise'); savePresets(); renderView();
+      }}, ic('plus',12)));
+      card.appendChild(grp);
+    });
+
+    if(!exEdit){
+      var eg=h('div',{class:'chipgroup'});
+      eg.appendChild(h('span',{class:'chipglabel'},'Endurance'));
+      ENDURANCE_TYPES.forEach(function(nm){
+        eg.appendChild(h('button',{class:'chip add', onclick:function(){ addEndurance(nm); }}, nm));
+      });
+      card.appendChild(eg);
+    }
+
+    if(exEdit){
+      card.appendChild(h('div',{class:'foot', style:{marginTop:'8px'}},
+        h('button',{class:'reset', onclick:function(){
+          exPresets=cloneOf(DEFAULT_EX_GROUPS); savePresets(); renderView();
+        }}, ic('rotate',13),'Reset presets to default')));
+    }
+    wrap.appendChild(card);
+  }
+
+  wrap.appendChild(saveBar());
+  return wrap;
+}
+
+function exerciseRow(ex){
+  /* Same rule as climbRow: never mutate the saved session in place. */
+  function live(){
+    var d=editable(), i;
+    for(i=0;i<d.exercises.length;i++) if(d.exercises[i].id===ex.id) return d.exercises[i];
+    return null;
+  }
+  var row=h('div',{class:'ex'});
+  row.appendChild(h('div',{class:'extop'},
+    h('input',{class:'exname', value:ex.name, placeholder:'Exercise',
+      oninput:function(e){ var x=live(); if(!x) return; x.name=e.target.value; touch(); refreshSaveBar(); }}),
+    h('button',{class:'del','aria-label':'Remove exercise', onclick:function(){
+      var d=editable(), i;
+      for(i=0;i<d.exercises.length;i++) if(d.exercises[i].id===ex.id){ d.exercises.splice(i,1); break; }
+      touch(); renderView();
+    }}, ic('x',16))
+  ));
+
+  var prev=lastTimeFor(ex.name, curDate);
+  if(prev && fmtSets(prev.sets)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+' · '+fmtSets(prev.sets)));
+
+  /* Labelled once at the top instead of repeating placeholders on every row. */
+  row.appendChild(h('div',{class:'sethead'},
+    h('span',{class:'setn'},''),
+    h('span',{}, 'weight'),
+    h('span',{class:'setx'},''),
+    h('span',{}, 'reps'),
+    h('span',{style:{width:'26px',flex:'none'}},'')
+  ));
+
+  ex.sets.forEach(function(st, i){
+    var wIn=h('input',{class:'setin', type:'number', inputMode:'decimal', placeholder:'—',
+      value:(st.weight!=null?String(st.weight):''), 'aria-label':'Set '+(i+1)+' weight',
+      oninput:function(e){ var x=live(); if(!x||!x.sets[i]) return;
+        var v=e.target.value; x.sets[i].weight = v===''?null:Number(v); touch(); refreshSaveBar(); }});
+    var rIn=h('input',{class:'setin', type:'number', inputMode:'numeric', placeholder:'—',
+      value:(st.reps!=null?String(st.reps):''), 'aria-label':'Set '+(i+1)+' reps',
+      oninput:function(e){ var x=live(); if(!x||!x.sets[i]) return;
+        var v=e.target.value; x.sets[i].reps = v===''?null:Math.round(Number(v)); touch(); refreshSaveBar(); }});
+    row.appendChild(h('div',{class:'setrow'},
+      h('span',{class:'setn'}, String(i+1)),
+      wIn,
+      h('span',{class:'setx'},'×'), rIn,
+      h('button',{class:'del','aria-label':'Remove set '+(i+1), onclick:function(){
+        var x=live(); if(!x) return;
+        x.sets.splice(i,1);
+        if(!x.sets.length) x.sets.push({weight:null,reps:null});
+        touch(); renderView();
+      }}, ic('x',14))
+    ));
+  });
+
+  row.appendChild(h('button',{class:'btn ghost sm', style:{marginTop:'9px'}, onclick:function(){
+    var x=live(); if(!x) return;
+    var last=x.sets[x.sets.length-1]||{weight:null,reps:null};
+    x.sets.push({ weight:last.weight, reps:last.reps });
+    touch(); renderView();
+  }},'+ set'));
+  return row;
+}
+
+function enduranceRow(en){
+  function live(){
+    var d=editable(), i;
+    for(i=0;i<d.endurance.length;i++) if(d.endurance[i].id===en.id) return d.endurance[i];
+    return null;
+  }
+  var row=h('div',{class:'ex'});
+  row.appendChild(h('div',{class:'extop'},
+    h('input',{class:'exname', value:en.name, placeholder:'Session',
+      oninput:function(e){ var x=live(); if(!x) return; x.name=e.target.value; touch(); refreshSaveBar(); }}),
+    h('button',{class:'del','aria-label':'Remove session', onclick:function(){
+      var d=editable(), i;
+      for(i=0;i<d.endurance.length;i++) if(d.endurance[i].id===en.id){ d.endurance.splice(i,1); break; }
+      touch(); renderView();
+    }}, ic('x',16))
+  ));
+
+  var prev=lastEnduranceFor(en.name, curDate);
+  if(prev && fmtEndurance(prev)) row.appendChild(h('div',{class:'exlast'},'last '+fmtShort(prev.date)+' · '+fmtEndurance(prev)));
+
+  /* Pace is the number a runner watches — computed live from distance + time
+     without re-rendering (which would blur the field being typed). */
+  var paceEl=h('div',{class:'endupace'});
+  function refreshPace(){
+    var x=live(), p=x?fmtPace(x.minutes, x.distance):null;
+    paceEl.textContent = p ? 'Pace '+p : '';
+    paceEl.style.display = p ? '' : 'none';
+  }
+  var grid=h('div',{class:'endugrid'});
+  ENDU_FIELDS.forEach(function(f){
+    var inp=h('input',{class:'setin', type:'number', inputMode:f.int?'numeric':'decimal', placeholder:'—',
+      value:(en[f.key]!=null?String(en[f.key]):''), 'aria-label':f.label+' in '+f.unit,
+      oninput:function(e){ var x=live(); if(!x) return;
+        var v=e.target.value; x[f.key] = v===''?null:(f.int?Math.round(Number(v)):Number(v)); touch(); refreshSaveBar(); refreshPace(); }});
+    grid.appendChild(h('label',{class:'endufield'},
+      h('span',{class:'endulabel'}, f.label+' · '+f.unit), inp));
+  });
+  row.appendChild(grid);
+  refreshPace();
+  row.appendChild(paceEl);
+  return row;
+}
+
+/* ---------- analysis ---------- */
+function rangeStart(r){
+  var t=todayStr();
+  if(r==='week') return addDays(t,-6);
+  if(r==='month') return addDays(t,-29);
+  if(r==='year') return addMonths(t,-11);
+  return '0000-01-01';
+}
+function bucketsFor(r){
+  var out=[], t=todayStr(), i;
+  if(r==='week'){ for(i=6;i>=0;i--){ var d=addDays(t,-i); out.push({start:d,end:d,label:parseLocal(d).toLocaleDateString(undefined,{weekday:'narrow'})}); } }
+  else if(r==='month'){ var w=weekStart(t); for(i=4;i>=0;i--){ var ws=addDays(w,-7*i); out.push({start:ws,end:addDays(ws,6),label:fmtShort(ws)}); } }
+  else { var m=monthStart(t); for(i=11;i>=0;i--){ var ms=addMonths(m,-i); out.push({start:ms,end:addDays(addMonths(ms,1),-1),label:parseLocal(ms).toLocaleDateString(undefined,{month:'narrow'})}); } }
+  return out;
+}
+function inRange(s, from){ return s.date>=from; }
+
+function buildAnalysis(){
+  var wrap=h('div',{class:'wrap'});
+  var from=rangeStart(range);
+  var scope=sessions.filter(function(s){ return inRange(s,from); });
+
+  var chips=h('div',{class:'ranges'});
+  [['week','Week'],['month','Month'],['year','Year'],['all','All time']].forEach(function(r){
+    chips.appendChild(h('button',{class:'rchip'+(range===r[0]?' on':''),
+      onclick:function(){ range=r[0]; renderView(); }}, r[1]));
+  });
+  wrap.appendChild(chips);
+
+  /* aggregate */
+  var bSent=0,bTries=0,rSent=0,rTries=0,hardB=null,hardR=null,volume=0,setCount=0;
+  var enElev=0,enDist=0,enMin=0,enCount=0;
+  var bySendGrade={}, byTryGrade={}, byRouteGrade={};
+  scope.forEach(function(s){
+    (s.boulders||[]).forEach(function(b){
+      bTries+=b.attempts;
+      byTryGrade[b.grade]=(byTryGrade[b.grade]||0)+1;
+      if(b.sent){ bSent++; bySendGrade[b.grade]=(bySendGrade[b.grade]||0)+1; if(hardB==null||b.grade>hardB) hardB=b.grade; }
+    });
+    (s.routes||[]).forEach(function(r){
+      rTries+=r.attempts;
+      if(r.sent){ rSent++; byRouteGrade[r.grade]=(byRouteGrade[r.grade]||0)+1; if(hardR==null||r.grade>hardR) hardR=r.grade; }
+    });
+    (s.exercises||[]).forEach(function(e){
+      (e.sets||[]).forEach(function(st){ if(st.weight!=null&&st.reps!=null){ volume+=st.weight*st.reps; setCount++; } });
+    });
+    (s.endurance||[]).forEach(function(e){
+      enCount++;
+      if(e.elevation!=null) enElev+=e.elevation;
+      if(e.distance!=null) enDist+=e.distance;
+      if(e.minutes!=null) enMin+=e.minutes;
+    });
+  });
+  var sendRate = bTries ? Math.round(bSent/bTries*100) : null;
+
+  var stats=h('div',{class:'stats'},
+    stat(String(scope.length),'Sessions'),
+    stat(hardB!=null?'V'+hardB:'—','Hardest', hardB!=null?vColor(hardB):null),
+    stat(String(bSent),'Sends'),
+    stat(sendRate!=null?sendRate+'%':'—','Send rate'),
+    stat(String(rSent),'Routes'),
+    stat(hardR!=null?SPORT[hardR]:'—','Hardest rt', hardR!=null?rColor(hardR):null),
+    stat(volume?(volume>=1000?(volume/1000).toFixed(1)+'k':String(Math.round(volume))):'—','Load'),
+    stat(String(setCount),'Sets')
+  );
+  wrap.appendChild(stats);
+
+  if(!sessions.length){
+    wrap.appendChild(h('div',{class:'empty'}, ic('trend',26),
+      h('p',{},'Nothing logged yet. Head to Climb or Train and record something.')));
+    return wrap;
+  }
+
+  /* histogram */
+  var bk=bucketsFor(range==='all'?'year':range);
+  var hist=h('div',{class:'chart'});
+  hist.appendChild(h('div',{class:'ctitle'},'Activity'));
+  hist.appendChild(h('div',{class:'csub'}, 'climbs, sets and sessions, '+(range==='week'?'per day':range==='month'?'per week':'per month')));
+  var counts=bk.map(function(b){
+    var c=0;
+    sessions.forEach(function(s){
+      if(s.date<b.start||s.date>b.end) return;
+      c+=(s.boulders||[]).length+(s.routes||[]).length+(s.endurance||[]).length;
+      (s.exercises||[]).forEach(function(e){ c+=(e.sets||[]).length; });
+    });
+    return c;
+  });
+  var maxC=Math.max(1, Math.max.apply(null, counts));
+  var hrow=h('div',{class:'volrow'});
+  bk.forEach(function(b,i){
+    hrow.appendChild(h('div',{class:'volcol'},
+      h('div',{class:'voltrack'}, h('div',{class:'volbar', style:{height:(counts[i]/maxC*100)+'%'}},
+        counts[i]?h('span',{class:'voln'},String(counts[i])):null)),
+      h('span',{class:'vollab'}, b.label)
+    ));
+  });
+  hist.appendChild(hrow);
+  wrap.appendChild(hist);
+
+  /* boulder pyramid */
+  var pyr=h('div',{class:'chart'});
+  pyr.appendChild(h('div',{class:'ctitle'},'Boulder pyramid'));
+  pyr.appendChild(h('div',{class:'csub'},'sends by grade — faded bar is all climbs tried'));
+  var gs={}; Object.keys(bySendGrade).forEach(function(g){gs[g]=1;}); Object.keys(byTryGrade).forEach(function(g){gs[g]=1;});
+  var glist=Object.keys(gs).map(Number).sort(function(a,b){return b-a;});
+  if(!glist.length) pyr.appendChild(h('div',{class:'cnote'},'No boulders in this range.'));
+  else {
+    var mx=1; glist.forEach(function(g){ mx=Math.max(mx, bySendGrade[g]||0, byTryGrade[g]||0); });
+    glist.forEach(function(g){
+      var sc=bySendGrade[g]||0, tc=byTryGrade[g]||0;
+      pyr.appendChild(h('div',{class:'pyrow'},
+        h('span',{class:'pyg', style:{color:vColor(g)}},'V'+g),
+        h('div',{class:'pytrack'},
+          tc?h('div',{class:'pyghost', style:{width:(tc/mx*100)+'%', background:vColor(g)}}):null,
+          sc?h('div',{class:'pybar', style:{width:(sc/mx*100)+'%', background:vColor(g)}}):null),
+        h('span',{class:'pyc'}, sc+' / '+tc)
+      ));
+    });
+  }
+  wrap.appendChild(pyr);
+
+  /* routes */
+  var rlist=Object.keys(byRouteGrade).map(Number).sort(function(a,b){return b-a;});
+  if(rlist.length){
+    var rp=h('div',{class:'chart'});
+    rp.appendChild(h('div',{class:'ctitle'},'Routes sent'));
+    rp.appendChild(h('div',{class:'csub'},'by grade'));
+    var rmx=1; rlist.forEach(function(g){ rmx=Math.max(rmx, byRouteGrade[g]); });
+    rlist.forEach(function(g){
+      rp.appendChild(h('div',{class:'pyrow'},
+        h('span',{class:'pyg', style:{color:rColor(g)}}, SPORT[g]),
+        h('div',{class:'pytrack'}, h('div',{class:'pybar', style:{width:(byRouteGrade[g]/rmx*100)+'%', background:rColor(g)}})),
+        h('span',{class:'pyc'}, String(byRouteGrade[g]))
+      ));
+    });
+    wrap.appendChild(rp);
+  }
+
+  /* tag breakdown */
+  var tagCount={};
+  scope.forEach(function(s){ (s.boulders||[]).forEach(function(b){ if(b.sent) b.tags.forEach(function(t){ tagCount[t]=(tagCount[t]||0)+1; }); }); });
+  var tlist=Object.keys(tagCount).sort(function(a,b){ return tagCount[b]-tagCount[a]; });
+  if(tlist.length){
+    var tc=h('div',{class:'chart'});
+    tc.appendChild(h('div',{class:'ctitle'},'Styles sent'));
+    tc.appendChild(h('div',{class:'csub'},'tags on boulders you sent'));
+    var tmx=tagCount[tlist[0]];
+    tlist.forEach(function(t){
+      tc.appendChild(h('div',{class:'pyrow'},
+        h('span',{class:'pyg', style:{width:'62px',color:'var(--dim)',fontSize:'13px'}}, t),
+        h('div',{class:'pytrack'}, h('div',{class:'pybar', style:{width:(tagCount[t]/tmx*100)+'%', background:'#8A7DE0'}})),
+        h('span',{class:'pyc'}, String(tagCount[t]))
+      ));
+    });
+    wrap.appendChild(tc);
+  }
+
+  /* endurance */
+  if(enCount){
+    var esec=h('div',{class:'chart'});
+    esec.appendChild(h('div',{class:'ctitle'},'Endurance'));
+    esec.appendChild(h('div',{class:'csub'}, enCount+(enCount===1?' session':' sessions')+' in this range'));
+    function eRow(label, val){ return h('div',{class:'sline', style:{justifyContent:'space-between'}},
+      h('span',{style:{color:'var(--dim)'}}, label), h('b',{}, val)); }
+    esec.appendChild(eRow('Distance', enDist ? (Math.round(enDist*10)/10)+' km' : '—'));
+    esec.appendChild(eRow('Avg pace', fmtPace(enMin, enDist) || '—'));
+    esec.appendChild(eRow('Time on feet', enMin ? fmtDuration(enMin) : '—'));
+    esec.appendChild(eRow('Elevation gain', enElev ? enElev.toLocaleString()+' m' : '—'));
+
+    /* distance per bucket — weekly mileage */
+    var eb=bk.map(function(b){
+      var g=0;
+      sessions.forEach(function(s){ if(s.date<b.start||s.date>b.end) return;
+        (s.endurance||[]).forEach(function(e){ if(e.distance!=null) g+=e.distance; }); });
+      return g;
+    });
+    if(Math.max.apply(null,eb)>0){
+      esec.appendChild(h('div',{class:'csub', style:{margin:'14px 2px 10px'}},'distance, '+(range==='week'?'per day':range==='month'?'per week':'per month')));
+      var emax=Math.max(1, Math.max.apply(null,eb));
+      var erow=h('div',{class:'volrow'});
+      bk.forEach(function(b,i){
+        var km=Math.round(eb[i]*10)/10;
+        erow.appendChild(h('div',{class:'volcol'},
+          h('div',{class:'voltrack'}, h('div',{class:'volbar', style:{height:(eb[i]/emax*100)+'%'}},
+            eb[i]?h('span',{class:'voln'}, String(km)):null)),
+          h('span',{class:'vollab'}, b.label)));
+      });
+      esec.appendChild(erow);
+    }
+    wrap.appendChild(esec);
+  }
+
+  /* exercise bests */
+  var best={};
+  scope.forEach(function(s){
+    (s.exercises||[]).forEach(function(e){
+      var nm=(e.name||'').trim(); if(!nm) return;
+      (e.sets||[]).forEach(function(st){
+        if(st.weight==null||st.reps==null) return;
+        if(!best[nm] || st.weight>best[nm].weight) best[nm]={ weight:st.weight, reps:st.reps, date:s.date };
+      });
+    });
+  });
+  var bn=Object.keys(best).sort();
+  if(bn.length){
+    var ec=h('div',{class:'chart'});
+    ec.appendChild(h('div',{class:'ctitle'},'Heaviest set'));
+    ec.appendChild(h('div',{class:'csub'},'per exercise, in this range'));
+    bn.forEach(function(nm){
+      ec.appendChild(h('div',{class:'sline', style:{justifyContent:'space-between'}},
+        h('span',{style:{color:'var(--chalk)'}}, nm),
+        h('b',{}, best[nm].weight+' × '+best[nm].reps+'  ·  '+fmtShort(best[nm].date))
+      ));
+    });
+    wrap.appendChild(ec);
+  }
+
+  /* session log */
+  wrap.appendChild(h('div',{class:'lbl'},'Session log'));
+  if(!scope.length) wrap.appendChild(h('div',{class:'cnote'},'No sessions in this range.'));
+  scope.forEach(function(s){ wrap.appendChild(sessionCard(s)); });
+  return wrap;
+}
+
+function stat(n,k,color){
+  return h('div',{class:'stat'}, h('div',{class:'n', style:color?{color:color}:null}, n), h('div',{class:'k'}, k));
+}
+
+function sessionCard(s){
+  var open = openSession===s.id;
+  var card=h('div',{class:'sess'});
+  var bits=[];
+  if((s.boulders||[]).length) bits.push(s.boulders.length+' boulder'+(s.boulders.length===1?'':'s'));
+  if((s.routes||[]).length) bits.push(s.routes.length+' route'+(s.routes.length===1?'':'s'));
+  if((s.endurance||[]).length) bits.push(s.endurance.length+(s.endurance.length===1?' session':' sessions'));
+  if((s.exercises||[]).length) bits.push(s.exercises.length+' exercise'+(s.exercises.length===1?'':'s'));
+  if((s.notes||'').trim()) bits.push('notes');
+
+  var chev=ic('chev',15);
+  chev.style.transform = open?'rotate(180deg)':'';
+  chev.style.color='var(--muted)';
+  card.appendChild(h('div',{class:'sesshead', role:'button', tabIndex:0,
+    onclick:function(){ openSession = open?null:s.id; renderView(); },
+    onkeydown:function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); openSession=open?null:s.id; renderView(); } }},
+    h('span',{class:'sessdate'}, fmtDate(s.date)),
+    h('span',{class:'sesssum'}, bits.join(' · ')||'empty'),
+    chev
+  ));
+
+  if(!open) return card;
+
+  var body=h('div',{class:'sessbody'});
+  if((s.boulders||[]).length){
+    var g1=h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Boulders'));
+    s.boulders.forEach(function(b){
+      g1.appendChild(h('div',{class:'sline'},
+        h('b',{style:{color:vColor(b.grade)}},'V'+b.grade),
+        h('span',{}, (b.sent?'sent':'project')+' · '+b.attempts+(b.attempts===1?' try':' tries')),
+        b.tags.map(function(t){ return h('span',{class:'stag'}, t); })
+      ));
+    });
+    body.appendChild(g1);
+  }
+  if((s.routes||[]).length){
+    var g2=h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Routes'));
+    s.routes.forEach(function(r){
+      g2.appendChild(h('div',{class:'sline'},
+        h('b',{style:{color:rColor(r.grade)}}, SPORT[r.grade]),
+        h('span',{}, (r.sent?'sent':'project')+' · '+r.attempts+(r.attempts===1?' try':' tries')),
+        r.tags.map(function(t){ return h('span',{class:'stag'}, t); })
+      ));
+    });
+    body.appendChild(g2);
+  }
+  if((s.endurance||[]).length){
+    var ge=h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Endurance'));
+    s.endurance.forEach(function(e){
+      ge.appendChild(h('div',{class:'sline'},
+        h('span',{style:{color:'var(--chalk)'}}, e.name||'Session'),
+        h('b',{}, fmtEndurance(e)||'—')
+      ));
+    });
+    body.appendChild(ge);
+  }
+  if((s.exercises||[]).length){
+    var g3=h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Training'));
+    s.exercises.forEach(function(e){
+      var txt=fmtSets(e.sets);
+      g3.appendChild(h('div',{class:'sline'},
+        h('span',{style:{color:'var(--chalk)'}}, e.name||'Exercise'),
+        h('b',{}, txt||((e.sets||[]).length+((e.sets||[]).length===1?' set':' sets')))
+      ));
+    });
+    body.appendChild(g3);
+  }
+  if((s.notes||'').trim()){
+    body.appendChild(h('div',{class:'sessgrp'}, h('div',{class:'sessgl'},'Notes'), h('div',{class:'snote'}, s.notes)));
+  }
+  body.appendChild(h('div',{class:'foot'},
+    h('button',{class:'reset', onclick:function(){
+      sessions=sessions.filter(function(x){ return x.id!==s.id; });
+      delete drafts[s.date]; persistDrafts();      /* no orphan draft resurrecting it */
+      openSession=null; commit(); renderView();
+    }}, ic('trash',13),'Delete this session')
+  ));
+  card.appendChild(body);
+  return card;
+}
+
+/* ---------- backup / restore ---------- */
+function exportData(){
+  var payload={ app:'crux', schema:SCHEMA, exported:new Date().toISOString(),
+    sessions:sessions, tags:tags, plan:plan, presets:exPresets };
+  var url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));
+  var a=h('a',{href:url, download:'crux-backup-'+todayStr()+'.json'});
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); },2000);
+  dataMsg={ text:'Backup downloaded.', ok:true }; renderView();
+}
+
+/* A backup file is untrusted input — every field is re-checked, not trusted. */
+function normalizeSession(s){
+  if(!s || typeof s!=='object' || !isDateStr(s.date)) return null;
+  function climbs(arr, maxGrade){
+    return Array.isArray(arr) ? arr.map(function(c){
+      if(!c || typeof c!=='object') return null;
+      var g=Math.round(Number(c.grade));
+      if(!isFinite(g) || g<0 || g>maxGrade) return null;
+      return { id:(typeof c.id==='string'&&c.id)?c.id:newId(), grade:g,
+        attempts:Math.max(1,Math.round(Number(c.attempts))||1),
+        sent: c.sent!==false,
+        tags: Array.isArray(c.tags) ? c.tags.filter(function(t){ return typeof t==='string'; }).map(function(t){ return t.slice(0,24); }).slice(0,12) : [] };
+    }).filter(Boolean) : [];
+  }
+  var boulders=climbs(s.boulders,20).map(function(b){ b.grade=Math.max(0,Math.min(20,b.grade)); return b; });
+  var routes=climbs(s.routes,SPORT.length-1);
+  var exercises=Array.isArray(s.exercises) ? s.exercises.map(function(e){
+    if(!e || typeof e!=='object') return null;
+    var sets=Array.isArray(e.sets) ? e.sets.map(function(st){
+      if(!st || typeof st!=='object') return null;
+      var w=Number(st.weight), r=Number(st.reps);
+      return { weight:(st.weight!=null&&isFinite(w)&&w>=0&&w<=1000)?w:null,
+               reps:(st.reps!=null&&isFinite(r)&&r>=0&&r<=1000)?Math.round(r):null };
+    }).filter(Boolean) : [];
+    if(!sets.length) sets=[{weight:null,reps:null}];
+    return { id:(typeof e.id==='string'&&e.id)?e.id:newId(), name:String(e.name||'').slice(0,120), sets:sets.slice(0,40) };
+  }).filter(Boolean) : [];
+  var num=function(v,max){ var n=Number(v); return (v!=null&&isFinite(n)&&n>=0&&n<=max)?n:null; };
+  var endurance=Array.isArray(s.endurance) ? s.endurance.map(function(e){
+    if(!e || typeof e!=='object') return null;
+    return { id:(typeof e.id==='string'&&e.id)?e.id:newId(), name:String(e.name||'').slice(0,120),
+      elevation:num(e.elevation,30000), minutes:num(e.minutes,10000),
+      distance:num(e.distance,1000), pack:num(e.pack,200) };
+  }).filter(Boolean).slice(0,40) : [];
+  var rpe=Number(s.rpe);
+  return { id:(typeof s.id==='string'&&s.id)?s.id:newId(), date:s.date,
+    notes:String(s.notes||'').slice(0,8000),
+    rpe:(isFinite(rpe)&&rpe>=1&&rpe<=10)?Math.round(rpe):null,
+    boulders:boulders, routes:routes, exercises:exercises, endurance:endurance };
+}
+
+function importData(file){
+  var reader=new FileReader();
+  reader.onerror=function(){ dataMsg={ text:"Couldn't read that file.", ok:false }; renderView(); };
+  reader.onload=function(){
+    var data;
+    try{ data=JSON.parse(reader.result); }
+    catch(e){ dataMsg={ text:'That file is not valid JSON.', ok:false }; renderView(); return; }
+    if(!data || typeof data!=='object' || !Array.isArray(data.sessions)){
+      dataMsg={ text:"That doesn't look like a Cookie backup.", ok:false }; renderView(); return;
+    }
+    var seen={}; sessions.forEach(function(s){ seen[s.id]=true; });
+    var byDate={}; sessions.forEach(function(s){ byDate[s.date]=s; });
+    var added=0, merged=0, skipped=0;
+    data.sessions.forEach(function(raw){
+      var s=normalizeSession(raw);
+      if(!s){ skipped++; return; }
+      if(seen[s.id]){ skipped++; return; }
+      var existing=byDate[s.date];
+      if(existing){
+        existing.boulders=existing.boulders.concat(s.boulders);
+        existing.routes=existing.routes.concat(s.routes);
+        existing.exercises=existing.exercises.concat(s.exercises);
+        if(!existing.notes && s.notes) existing.notes=s.notes;
+        if(existing.rpe==null) existing.rpe=s.rpe;
+        merged++;
+      } else {
+        seen[s.id]=true; byDate[s.date]=s; sessions.push(s); added++;
+      }
+    });
+    if(data.tags && typeof data.tags==='object'){
+      ['boulder','route'].forEach(function(k){
+        if(!Array.isArray(data.tags[k])) return;
+        data.tags[k].forEach(function(t){
+          if(typeof t==='string' && t && tags[k].indexOf(t)<0) tags[k].push(t.slice(0,24));
+        });
+      });
+      saveTags();
+    }
+    var planNote='';
+    if(data.plan && typeof data.plan==='object'){
+      plan=normalizePlan(data.plan, plan); savePlan(); planNote=' Plan restored.';
+    }
+    var p=normalizePresets(data.presets);
+    if(p){ exPresets=p; savePresets(); }
+    commit();
+    dataMsg={ text:'Imported '+added+' session'+(added===1?'':'s')+
+      (merged?', merged into '+merged+' existing day'+(merged===1?'':'s'):'')+
+      (skipped?', skipped '+skipped+' duplicate or invalid':'')+'.'+planNote, ok:true };
+    renderView();
+  };
+  reader.readAsText(file);
+}
+
+function buildData(){
+  var wrap=h('div',{class:'wrap'});
+  var card=h('div',{class:'card'});
+  card.appendChild(h('div',{class:'lbl first'},'Backup'));
+  card.appendChild(h('p',{class:'sub'},'Your log lives only on this device. Export here, then import on your other device to move it across.'));
+  var picker=h('input',{type:'file', accept:'application/json,.json', style:{display:'none'},
+    onchange:function(e){ var f=e.target.files&&e.target.files[0]; if(f) importData(f); e.target.value=''; }});
+  card.appendChild(h('div',{class:'datarow'},
+    h('button',{class:'btn ghost', onclick:exportData},'Export backup'),
+    h('button',{class:'btn ghost', onclick:function(){ picker.click(); }},'Import backup'),
+    picker));
+  if(dataMsg) card.appendChild(h('div',{class:'dmsg '+(dataMsg.ok?'ok':'err')}, dataMsg.text));
+  wrap.appendChild(card);
+
+  var stats=h('div',{class:'card'});
+  stats.appendChild(h('div',{class:'lbl first'},'Stored'));
+  var nb=0,nr=0,ne=0;
+  sessions.forEach(function(s){ nb+=(s.boulders||[]).length; nr+=(s.routes||[]).length; ne+=(s.exercises||[]).length; });
+  stats.appendChild(h('p',{class:'sub', style:{margin:'0'}},
+    sessions.length+' sessions · '+nb+' boulders · '+nr+' routes · '+ne+' exercises'));
+
+  /* Which build is actually running. GitHub Pages sends max-age=600 and an
+     installed app does not re-fetch on resume, so "is this the new version?"
+     is otherwise unanswerable from the phone. */
+  var buildEl=h('p',{class:'sub', style:{margin:'8px 0 0'}},'build …');
+  stats.appendChild(buildEl);
+  try{
+    if(window.caches && caches.keys){
+      caches.keys().then(function(keys){
+        buildEl.textContent='build '+(keys.length?keys.join(', '):'not cached');
+      }).catch(function(){ buildEl.textContent='build unknown'; });
+    } else { buildEl.textContent='build unknown'; }
+  }catch(e){ buildEl.textContent='build unknown'; }
+
+  stats.appendChild(h('div',{class:'datarow', style:{marginTop:'12px'}},
+    h('button',{class:'btn ghost sm', onclick:function(){
+      var done=function(){ location.reload(true); };
+      try{
+        if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+          navigator.serviceWorker.getRegistration().then(function(r){
+            if(!r) return done();
+            r.update().then(done, done);
+          }, done);
+        } else done();
+      }catch(e){ done(); }
+    }},'Check for update')));
+
+  stats.appendChild(h('div',{class:'foot'},
+    h('button',{class:'reset', onclick:function(){
+      if(!resetArmed){ resetArmed=true; dataMsg=null; renderView(); setTimeout(function(){ resetArmed=false; },4000); return; }
+      sessions=[]; drafts={}; justSaved=null; tags={ boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
+      plan=normalizePlan(null, DEFAULT_PLAN); exPresets=cloneOf(DEFAULT_EX_GROUPS);
+      saveSessions(); persistDrafts(); saveTags(); savePlan(); savePresets(); resetArmed=false;
+      dataMsg={ text:'All data erased.', ok:false }; renderView();
+    }}, ic('trash',13), resetArmed?'Tap again to erase everything':'Reset all data')));
+  wrap.appendChild(stats);
+  return wrap;
+}
+
+/* ---------- render ---------- */
+function renderView(){
+  viewHost.innerHTML='';
+  viewHost.appendChild(
+    tab==='climb' ? buildClimb() :
+    tab==='train' ? buildTrain() :
+    tab==='analysis' ? buildAnalysis() : buildData()
+  );
+}
+/* Transient confirmation, lives at the app level so renderView() (which only
+   rebuilds viewHost) never clears it mid-flash. */
+var toastEl=null, toastTimer=null;
+function toast(msg){
+  if(!toastEl) return;
+  toastEl.innerHTML='';
+  toastEl.appendChild(ic('check',15));
+  toastEl.appendChild(document.createTextNode(' '+msg));
+  toastEl.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ toastEl.classList.remove('show'); }, 1700);
+}
+function mount(){
+  var app=document.getElementById('app'); app.innerHTML=''; app.className='app';
+  app.appendChild(buildHeader());
+  tabsHost=h('div',{}); app.appendChild(tabsHost);
+  viewHost=h('div',{}); app.appendChild(viewHost);
+  toastEl=h('div',{class:'toast', role:'status', 'aria-live':'polite'}); app.appendChild(toastEl);
+  renderTabs(); renderView();
+  if('serviceWorker' in navigator){
+    window.addEventListener('load', function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });
+  }
+}
+mount();
+</script>
+</body>
+</html>
