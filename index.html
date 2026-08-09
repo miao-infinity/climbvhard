@@ -165,6 +165,13 @@
   .savebar .msg{font-family:var(--mono);font-size:11px;color:#E7C13B;letter-spacing:.06em;flex:1;min-width:96px;display:flex;align-items:center;gap:7px;}
   .savedot{width:7px;height:7px;border-radius:50%;background:#E7C13B;flex:none;}
   .draftnote{font-family:var(--mono);font-size:11px;color:var(--muted);margin:-6px 2px 12px;}
+  /* transient "Saved" confirmation */
+  .toast{position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));z-index:50;
+    display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
+    background:rgba(51,195,158,.14);border:1px solid rgba(51,195,158,.42);color:#33C39E;
+    padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;
+    opacity:0;pointer-events:none;transform:translateX(-50%) translateY(8px);transition:opacity .2s,transform .2s;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   /* exercise quick-add */
   .chipgroup{display:flex;flex-wrap:wrap;align-items:center;gap:5px 15px;margin-bottom:7px;}
@@ -567,6 +574,7 @@ function saveDraftSession(){
   activeClimb={ boulder:null, route:null };
   justSaved=d;                       /* blanks the logging pages for the next entry */
   commit(); renderView();
+  toast('Saved');                    /* the page blanks on save — confirm it landed */
 }
 function discardDraftSession(){ delete drafts[curDate]; persistDrafts(); renderView(); }
 
@@ -1606,11 +1614,24 @@ function renderView(){
     tab==='analysis' ? buildAnalysis() : buildData()
   );
 }
+/* Transient confirmation, lives at the app level so renderView() (which only
+   rebuilds viewHost) never clears it mid-flash. */
+var toastEl=null, toastTimer=null;
+function toast(msg){
+  if(!toastEl) return;
+  toastEl.innerHTML='';
+  toastEl.appendChild(ic('check',15));
+  toastEl.appendChild(document.createTextNode(' '+msg));
+  toastEl.classList.add('show');
+  if(toastTimer) clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){ toastEl.classList.remove('show'); }, 1700);
+}
 function mount(){
   var app=document.getElementById('app'); app.innerHTML=''; app.className='app';
   app.appendChild(buildHeader());
   tabsHost=h('div',{}); app.appendChild(tabsHost);
   viewHost=h('div',{}); app.appendChild(viewHost);
+  toastEl=h('div',{class:'toast', role:'status', 'aria-live':'polite'}); app.appendChild(toastEl);
   renderTabs(); renderView();
   if('serviceWorker' in navigator){
     window.addEventListener('load', function(){ navigator.serviceWorker.register('./sw.js').catch(function(){}); });
