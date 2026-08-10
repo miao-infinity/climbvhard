@@ -142,12 +142,15 @@
   .attlbl{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;}
 
   /* weekly plan strip */
-  .plan{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin-bottom:12px;overflow:hidden;}
-  .planhead{display:flex;align-items:center;gap:10px;padding:11px 13px;cursor:pointer;width:100%;background:transparent;border:none;font-family:var(--font);font-size:15px;text-align:left;}
+  /* Collapsed, the plan is a quiet one-line caption — no box. It only becomes
+     a panel when you open it to edit the week. */
+  .plan{margin-bottom:14px;}
+  .planhead{display:flex;align-items:center;gap:8px;padding:2px;cursor:pointer;width:100%;background:transparent;border:none;font-family:var(--font);font-size:13px;text-align:left;}
   .plandow{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--muted);flex:none;}
-  .plantext{flex:1;min-width:0;font-size:15px;color:var(--chalk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .plantext{flex:1;min-width:0;font-size:13px;color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .plantext.rest{color:var(--muted);}
-  .planbody{padding:4px 13px 13px;border-top:1px solid var(--line);}
+  .planhead svg{color:var(--muted);flex:none;}
+  .planbody{margin-top:10px;padding:6px 14px 12px;background:var(--panel);border:1px solid var(--line);border-radius:12px;}
   .day{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line);}
   .day:last-of-type{border-bottom:none;}
   .day.rest{opacity:.62;}
@@ -169,7 +172,7 @@
   .toast{position:fixed;left:50%;bottom:calc(94px + env(safe-area-inset-bottom));z-index:50;
     display:inline-flex;align-items:center;gap:6px;white-space:nowrap;
     background:rgba(51,195,158,.14);border:1px solid rgba(51,195,158,.42);color:#33C39E;
-    padding:9px 16px;border-radius:999px;font-size:14px;font-weight:600;
+    padding:9px 16px;border-radius:999px;font-size:15px;font-weight:600;
     opacity:0;pointer-events:none;transform:translateX(-50%) translateY(8px);transition:opacity .2s,transform .2s;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
@@ -208,12 +211,13 @@
   .setunit{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;width:22px;}
 
   /* stats + charts */
-  /* boulder / sport switch */
-  .seg{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:4px;margin-bottom:12px;}
-  .segbtn{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-family:var(--font);
-    font-weight:600;font-size:15px;border-radius:9px;cursor:pointer;transition:.15s;}
-  .segbtn:hover{color:var(--dim);}
-  .segbtn.on{background:var(--raise);color:var(--chalk);}
+  /* boulder / sport switch — light underlined tabs, not a filled bar */
+  .disc{display:flex;gap:24px;margin-bottom:16px;border-bottom:1px solid var(--line);}
+  .disctab{position:relative;padding:0 0 10px;border:none;background:transparent;color:var(--muted);
+    font-family:var(--font);font-weight:600;font-size:17px;cursor:pointer;transition:color .15s;}
+  .disctab:hover{color:var(--dim);}
+  .disctab.on{color:var(--chalk);}
+  .disctab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#E5484D;border-radius:2px;}
 
   .ranges{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
   .rchip{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s;}
@@ -263,6 +267,17 @@
   .reset{background:transparent;border:none;color:var(--muted);font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:var(--mono);transition:.15s;}
   .reset:hover{color:#E5484D;}
   .datarow{display:flex;gap:8px;flex-wrap:wrap;}
+  /* quiet version/update footer on the Data page */
+  .verfoot{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:6px;
+    font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .verfoot button{background:none;border:none;padding:0;color:var(--dim);font-family:var(--mono);
+    font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:2px;}
+  .verfoot button:hover{color:var(--chalk);}
+  .drow{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+    padding:8px 0;border-top:1px solid var(--line);font-size:15px;}
+  .drow:first-of-type{border-top:none;}
+  .drow .k{color:var(--dim);}
+  .drow .v{font-family:var(--mono);font-weight:600;color:var(--chalk);}
   .dmsg{font-family:var(--mono);font-size:13px;margin-top:11px;line-height:1.5;}
   .dmsg.ok{color:#33C39E;}
   .dmsg.err{color:#E5484D;}
@@ -690,7 +705,7 @@ function planStrip(){
   chev.style.transform = planOpen ? 'rotate(180deg)' : '';
   box.appendChild(h('button',{class:'planhead', 'aria-expanded':String(planOpen),
     onclick:function(){ planOpen=!planOpen; renderView(); }},
-    h('span',{class:'plandow'}, dow.toUpperCase()), head, chev));
+    h('span',{class:'plandow'}, dow.toUpperCase()), h('span',{style:{color:'var(--muted)',flex:'none'}},'·'), head, chev));
   if(planOpen) box.appendChild(planBody(dow, head));
   return box;
 }
@@ -732,18 +747,18 @@ function planBody(curDow, headEl){
 function buildClimb(){
   var wrap=h('div',{class:'wrap'});
   var s=viewOf(curDate);
-  wrap.appendChild(planStrip());
   wrap.appendChild(dateBar());
+  wrap.appendChild(planStrip());
   wrap.appendChild(draftNote());
 
   /* Boulder and sport are separate sub-pages: a normal session is one or the
      other, so showing both at once was half a screen of dead weight. */
-  var seg=h('div',{class:'seg'});
+  var disc=h('div',{class:'disc'});
   [['boulder','Boulder'],['sport','Sport']].forEach(function(m){
-    seg.appendChild(h('button',{class:'segbtn'+(climbMode===m[0]?' on':''),
+    disc.appendChild(h('button',{class:'disctab'+(climbMode===m[0]?' on':''),
       onclick:function(){ climbMode=m[0]; save('crux:climbmode',climbMode); renderView(); }}, m[1]));
   });
-  wrap.appendChild(seg);
+  wrap.appendChild(disc);
 
   if(climbMode==='boulder'){
     var card=h('div',{class:'card'});
@@ -940,8 +955,8 @@ function fmtEndurance(e){
 function buildTrain(){
   var wrap=h('div',{class:'wrap'});
   var s=viewOf(curDate);
-  wrap.appendChild(planStrip());
   wrap.appendChild(dateBar());
+  wrap.appendChild(planStrip());
   wrap.appendChild(draftNote());
 
   function addNamed(nm){
@@ -1548,52 +1563,34 @@ function importData(file){
 
 function buildData(){
   var wrap=h('div',{class:'wrap'});
+  function plural(n,word){ return n+' '+word+(n===1?'':'s'); }
+
+  /* Backup */
   var card=h('div',{class:'card'});
   card.appendChild(h('div',{class:'lbl first'},'Backup'));
-  card.appendChild(h('p',{class:'sub'},'Your log lives only on this device. Export here, then import on your other device to move it across.'));
+  card.appendChild(h('p',{class:'sub'},'Your log lives only on this device. Export here, then import it on another device to move it across.'));
   var picker=h('input',{type:'file', accept:'application/json,.json', style:{display:'none'},
     onchange:function(e){ var f=e.target.files&&e.target.files[0]; if(f) importData(f); e.target.value=''; }});
   card.appendChild(h('div',{class:'datarow'},
-    h('button',{class:'btn ghost', onclick:exportData},'Export backup'),
-    h('button',{class:'btn ghost', onclick:function(){ picker.click(); }},'Import backup'),
+    h('button',{class:'btn ghost', onclick:exportData},'Export'),
+    h('button',{class:'btn ghost', onclick:function(){ picker.click(); }},'Import'),
     picker));
   if(dataMsg) card.appendChild(h('div',{class:'dmsg '+(dataMsg.ok?'ok':'err')}, dataMsg.text));
   wrap.appendChild(card);
 
-  var stats=h('div',{class:'card'});
-  stats.appendChild(h('div',{class:'lbl first'},'Stored'));
-  var nb=0,nr=0,ne=0;
-  sessions.forEach(function(s){ nb+=(s.boulders||[]).length; nr+=(s.routes||[]).length; ne+=(s.exercises||[]).length; });
-  stats.appendChild(h('p',{class:'sub', style:{margin:'0'}},
-    sessions.length+' sessions · '+nb+' boulders · '+nr+' routes · '+ne+' exercises'));
-
-  /* Which build is actually running. GitHub Pages sends max-age=600 and an
-     installed app does not re-fetch on resume, so "is this the new version?"
-     is otherwise unanswerable from the phone. */
-  var buildEl=h('p',{class:'sub', style:{margin:'8px 0 0'}},'build …');
-  stats.appendChild(buildEl);
-  try{
-    if(window.caches && caches.keys){
-      caches.keys().then(function(keys){
-        buildEl.textContent='build '+(keys.length?keys.join(', '):'not cached');
-      }).catch(function(){ buildEl.textContent='build unknown'; });
-    } else { buildEl.textContent='build unknown'; }
-  }catch(e){ buildEl.textContent='build unknown'; }
-
-  stats.appendChild(h('div',{class:'datarow', style:{marginTop:'12px'}},
-    h('button',{class:'btn ghost sm', onclick:function(){
-      var done=function(){ location.reload(true); };
-      try{
-        if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
-          navigator.serviceWorker.getRegistration().then(function(r){
-            if(!r) return done();
-            r.update().then(done, done);
-          }, done);
-        } else done();
-      }catch(e){ done(); }
-    }},'Check for update')));
-
-  stats.appendChild(h('div',{class:'foot'},
+  /* Your data — clean count rows + reset */
+  var nb=0,nr=0,ne=0,nx=0;
+  sessions.forEach(function(s){ nb+=(s.boulders||[]).length; nr+=(s.routes||[]).length;
+    nx+=(s.endurance||[]).length; ne+=(s.exercises||[]).length; });
+  function drow(k,v){ return h('div',{class:'drow'}, h('span',{class:'k'},k), h('span',{class:'v'}, String(v))); }
+  var card2=h('div',{class:'card'});
+  card2.appendChild(h('div',{class:'lbl first'},'Your data'));
+  card2.appendChild(drow('Sessions', sessions.length));
+  card2.appendChild(drow('Boulders', nb));
+  card2.appendChild(drow('Routes', nr));
+  card2.appendChild(drow('Runs & hikes', nx));
+  card2.appendChild(drow('Exercises', ne));
+  card2.appendChild(h('div',{class:'foot'},
     h('button',{class:'reset', onclick:function(){
       if(!resetArmed){ resetArmed=true; dataMsg=null; renderView(); setTimeout(function(){ resetArmed=false; },4000); return; }
       sessions=[]; drafts={}; justSaved=null; tags={ boulder:BASE_BOULDER_TAGS.slice(), route:BASE_ROUTE_TAGS.slice() };
@@ -1601,7 +1598,27 @@ function buildData(){
       saveSessions(); persistDrafts(); saveTags(); savePlan(); savePresets(); resetArmed=false;
       dataMsg={ text:'All data erased.', ok:false }; renderView();
     }}, ic('trash',13), resetArmed?'Tap again to erase everything':'Reset all data')));
-  wrap.appendChild(stats);
+  wrap.appendChild(card2);
+
+  /* Quiet version footer — which build is running, and a manual refresh.
+     GitHub Pages sends max-age=600 and an installed app does not re-fetch on
+     resume, so this is otherwise unanswerable from the phone. */
+  var vEl=h('span',{},'…');
+  try{
+    if(window.caches && caches.keys){
+      caches.keys().then(function(keys){ vEl.textContent = keys.length ? keys.join(', ') : 'not cached'; })
+        .catch(function(){ vEl.textContent='unknown'; });
+    } else { vEl.textContent='unknown'; }
+  }catch(e){ vEl.textContent='unknown'; }
+  wrap.appendChild(h('div',{class:'verfoot'}, vEl,
+    h('button',{onclick:function(){
+      var done=function(){ location.reload(true); };
+      try{
+        if(navigator.serviceWorker && navigator.serviceWorker.getRegistration){
+          navigator.serviceWorker.getRegistration().then(function(r){ if(!r) return done(); r.update().then(done, done); }, done);
+        } else done();
+      }catch(e){ done(); }
+    }},'Check for update')));
   return wrap;
 }
 
