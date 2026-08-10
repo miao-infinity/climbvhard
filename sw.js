@@ -1,4 +1,4 @@
-/* CRUX — offline service worker */
+/* cookie — offline service worker */
 var CACHE = 'cookie-v6';
 var ASSETS = [
   './',
