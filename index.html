@@ -211,13 +211,16 @@
   .setunit{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none;width:22px;}
 
   /* stats + charts */
-  /* boulder / sport switch — light underlined tabs, not a filled bar */
-  .disc{display:flex;gap:24px;margin-bottom:16px;border-bottom:1px solid var(--line);}
-  .disctab{position:relative;padding:0 0 10px;border:none;background:transparent;color:var(--muted);
-    font-family:var(--font);font-weight:600;font-size:17px;cursor:pointer;transition:color .15s;}
+  /* Discipline switch — it *is* the log card's title. Previously an underlined
+     tab bar sitting directly above a label that repeated the active tab; at
+     375px that rule ran 217px under nothing. Weight and brightness carry the
+     selection, same as the style chips — no underline, no rule. */
+  .dischead{display:flex;align-items:center;gap:20px;margin:-12px -2px 4px;}
+  .disctab{padding:12px 2px;line-height:1.3;border:none;background:transparent;
+    color:var(--muted);font-family:var(--font);font-size:15px;font-weight:400;
+    cursor:pointer;transition:color .15s;}
   .disctab:hover{color:var(--dim);}
-  .disctab.on{color:var(--chalk);}
-  .disctab.on::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;background:#E5484D;border-radius:2px;}
+  .disctab.on{color:var(--chalk);font-weight:600;}
 
   .ranges{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;}
   .rchip{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:9px;padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);transition:.15s;}
@@ -690,6 +693,20 @@ function styleRow(kind){
   return row;
 }
 
+/* ---------- shared: discipline switch ---------- */
+/* Doubles as the log card's title, so the page says the discipline once
+   instead of a tab bar plus a label underneath repeating it. The stored value
+   stays 'boulder'/'sport', so crux:climbmode from an older build still loads. */
+function discHead(){
+  var row=h('div',{class:'dischead'});
+  [['boulder','Boulder'],['sport','Sport']].forEach(function(m){
+    var on = climbMode===m[0];
+    row.appendChild(h('button',{class:'disctab'+(on?' on':''), 'aria-pressed':String(on),
+      onclick:function(){ climbMode=m[0]; save('crux:climbmode',climbMode); renderView(); }}, m[1]));
+  });
+  return row;
+}
+
 /* ---------- shared: weekly plan strip ---------- */
 /* Collapsed it shows one line — the plan for whichever day curDate points at,
    so it matches the session you are actually editing. Expanded it is the full
@@ -753,16 +770,9 @@ function buildClimb(){
 
   /* Boulder and sport are separate sub-pages: a normal session is one or the
      other, so showing both at once was half a screen of dead weight. */
-  var disc=h('div',{class:'disc'});
-  [['boulder','Boulder'],['sport','Sport']].forEach(function(m){
-    disc.appendChild(h('button',{class:'disctab'+(climbMode===m[0]?' on':''),
-      onclick:function(){ climbMode=m[0]; save('crux:climbmode',climbMode); renderView(); }}, m[1]));
-  });
-  wrap.appendChild(disc);
-
   if(climbMode==='boulder'){
     var card=h('div',{class:'card'});
-    card.appendChild(h('div',{class:'lbl first'},'Boulders'));
+    card.appendChild(discHead());
     card.appendChild(styleRow('boulder'));
     var picker=h('div',{class:'grades'});
     V_GRADES.forEach(function(g){
@@ -782,7 +792,7 @@ function buildClimb(){
     wrap.appendChild(card);
   } else {
     var rcard=h('div',{class:'card'});
-    rcard.appendChild(h('div',{class:'lbl first'},'Sport'));
+    rcard.appendChild(discHead());
     rcard.appendChild(styleRow('route'));
     var sel=h('select',{class:'inp', style:{maxWidth:'118px'}, 'aria-label':'Route grade'});
     SPORT.forEach(function(lbl,i){ sel.appendChild(h('option',{value:String(i), selected:(i===4)}, lbl)); });
